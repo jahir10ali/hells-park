@@ -11,6 +11,6 @@ Now you can make edits to this repo such as editing code, creating code and more
 After that make sure you commit these changes. When you commit these chnages,
 make sure you put a nice title to it so we know what you have changed.
 Make sure to add a description to for more context. 
-
-Now go on GitHub and make a pull request for that code, this means requesting to submit
+When you commit these changes, you can directly make a pull request here! OR, you can
+now go on GitHub and make a pull request for that code, this means requesting to submit
 these changes into the main program. DONE!

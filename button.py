@@ -1,4 +1,11 @@
-import simplegui
+try:
+    import simplegui
+except ImportError:
+    import SimpleGUICS2Pygame.simpleguics2pygame as simplegui
+
+from vector import *
+import random
+
 
 class Button:
     def __init__(self, position, image, scale):

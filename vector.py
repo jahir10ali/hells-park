@@ -68,3 +68,59 @@ class Vector:
         return self.multiply(1/k)
 
     def __truediv__(self, k):
+        return self.copy().divide(k)
+
+    # Normalizes the vector
+    def normalize(self):
+        return self.divide(self.length())
+
+    # Returns a normalized version of the vector
+    def get_normalized(self):
+        return self.copy().normalize()
+
+    # Returns the dot product of this vector with another one
+    def dot(self, other):
+        return self.x * other.x + self.y * other.y
+
+    # Returns the length of the vector
+    def length(self):
+        return math.sqrt(self.x**2 + self.y**2)
+
+    # Returns the squared length of the vector
+    def length_squared(self):
+        return self.x**2 + self.y**2
+
+    # Reflect this vector on a normal
+    def reflect(self, normal):
+        n = normal.copy()
+        n.multiply(2*self.dot(normal))
+        self.subtract(n)
+        return self
+
+    # Returns the angle between this vector and another one
+    def angle(self, other):
+        return math.acos(self.dot(other) / (self.length() * other.length()))
+
+    # Rotates the vector 90 degrees anticlockwise
+    def rotate_anti(self):
+        self.x, self.y = -self.y, self.x
+        return self
+
+    # Rotates the vector according to an angle theta given in radians
+    def rotate_rad(self, theta):
+        rx = self.x * math.cos(theta) - self.y * math.sin(theta)
+        ry = self.x * math.sin(theta) + self.y * math.cos(theta)
+        self.x, self.y = rx, ry
+        return self
+
+    # Rotates the vector according to an angle theta given in degrees
+    def rotate(self, theta):
+        theta_rad = theta / 180 * math.pi
+        return self.rotate_rad(theta_rad)
+    
+    # project the vector onto a given vector
+    def get_proj(self, vec):
+        unit = vec.get_normalized()
+        return unit.multiply(self.dot(unit))
+        
+        

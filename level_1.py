@@ -3,8 +3,15 @@ try:
 except ImportError:
     import SimpleGUICS2Pygame.simpleguics2pygame as simplegui
 
-frame = simplegui.create_frame("Level one", 1000,700)
-frame.set_canvas_background("Black")
-frame.start()
+
+class levelOne():
+
+    def draw(self, canvas):
+        canvas.draw_text("play", (100,100), 50, 'blue' 'sans-serif')
+
+    def click(self, pos):
+        self.click_pos = pos
+
+
 
 # this is the level 1 screen of the game to be worked on

@@ -1,4 +1,5 @@
 from vector import Vector
+from level_1 import levelOne
 
 try:
     import Simplegui
@@ -51,13 +52,15 @@ class startscreen():
         canvas.draw_text("Level One", (335,200), 100, 'Blue', 'sans-serif')
         canvas.draw_text("START GAME!", self.start_game_button_pos.get_p(), 40, 'Blue', 'sans-serif')
         canvas.draw_text("Back", self.back_button_pos.get_p(), 40, 'Blue', 'sans-serif')
+        
 
     def click_trigger(self, pos):
 
         self.click_pos = pos
         if self.clicked_inside(pos, self.start_game_button_pos):
-            frame.set_draw_handler(opening_screen.draw)
-            frame.set_mouseclick_handler(opening_screen.click_trigger)
+            level_one_screen = levelOne()
+            frame.set_draw_handler(level_one_screen.draw)
+            frame.set_mouseclick_handler(level_one_screen.click)
         elif self.clicked_inside(pos, self.back_button_pos):
             frame.set_draw_handler(opening_screen.draw)
             frame.set_mouseclick_handler(opening_screen.click_trigger)

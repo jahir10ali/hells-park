@@ -26,8 +26,11 @@ class homescreen():
         self.click_pos = pos
         if self.clicked_inside_button(pos, self.start_button_pos):
             frame.set_draw_handler(start_screen.draw)
+            
         elif self.clicked_inside_button(pos, self.how_to_play_button_pos):
             frame.set_draw_handler(tutorial_screen.draw)
+            frame.set_mouseclick_handler(tutorial_screen.click_trigger)
+        
 
 
 
@@ -46,12 +49,32 @@ class startscreen():
 
 class tutorialscreen():
 
+    def __init__(self):
+        self.back_button_pos = Vector(400, 530)
+
     def draw(self, canvas):
         global title_button_pos
         canvas.draw_text("How to play: ", title_button_pos.get_p(), 50, 'Blue', 'serif')
-        canvas.draw_text("Back", (400, 400), 50, 'Blue', 'serif')
+        canvas.draw_text("1. Goal of the game is to reach the other door", (256, 300), 40, 'Blue')
+        canvas.draw_text("2. Use W A S D to control waterboy.", (256, 350), 40, 'Blue')
+        canvas.draw_text("3. Press space button to jump.", (256,400), 40, 'Blue')
+        canvas.draw_text("4. Avoid the obsatcles in the way.", (256, 450), 40, 'Blue')
+        canvas.draw_text("Back", self.back_button_pos.get_p() , 50, 'Blue', 'serif')
 
+    def click_trigger(self, pos):
 
+        self.click_pos = pos
+        if self.clicked_inside_back(pos, self.back_button_pos):
+            frame.set_draw_handler(opening_screen.draw)
+            frame.set_mouseclick_handler(opening_screen.click_trigger)
+
+    def clicked_inside_back(self, pos, button_pos):
+        return(
+            self.click_pos[0] > button_pos.get_p()[0] and self.click_pos[0] < button_pos.get_p()[0] + 100 and 
+            self.click_pos[1] > button_pos.get_p()[1] - 50 and self.click_pos[1] < button_pos.get_p()[1]
+        )
+
+        
 
 opening_screen = homescreen(name)
 start_screen = startscreen()

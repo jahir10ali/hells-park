@@ -7,7 +7,7 @@ except ImportError:
 class levelOne():
 
     def draw(self, canvas):
-        canvas.draw_text("jahirs gay ", (100,100), 50, 'blue' 'sans-serif')
+        canvas.draw_text("this is level 1 ", (100,100), 50, 'blue' 'sans-serif')
 
     def click(self, pos):
         self.click_pos = pos

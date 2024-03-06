@@ -22,6 +22,8 @@ class homescreen():
         canvas.draw_text(self.title, title_button_pos.get_p() , 100, 'Blue', 'serif' )
         canvas.draw_text("Start", self.start_button_pos.get_p(), 50, 'Blue', 'serif')
         canvas.draw_text("How to play", self.how_to_play_button_pos.get_p(), 50, 'Blue', 'serif')
+        
+        
 
     def click_trigger(self, pos):
         self.click_pos = pos
@@ -105,7 +107,7 @@ start_screen = startscreen()
 tutorial_screen = tutorialscreen()
 
 frame = simplegui.create_frame("Welcome Screen", 1000, 700)
-frame.set_canvas_background("white")
+frame.set_canvas_background('white')
 frame.set_mouseclick_handler(opening_screen.click_trigger)
 
 frame.set_draw_handler(opening_screen.draw)

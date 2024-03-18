@@ -2,8 +2,8 @@ from imagesANDbuttons import draw_button, draw_image
 
 play_btn_img = 'images/play_btn.jpg'  
 htp_btn_img = 'images/htp_btn.jpg'
-exit_btn_img = 'Waterboy-SimpleGUI/images/exit_btn.jpg'
-title_img = 'Waterboy-SimpleGUI/images/title.jpg'
+exit_btn_img = 'images/exit_btn.jpg'
+title_img = 'images/title.jpg'
 
 
 # Define draw function to load and draw the image

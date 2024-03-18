@@ -1,10 +1,10 @@
 from imagesANDbuttons import draw_button
 
-exit_btn_img = 'Waterboy-SimpleGUI/images/exit_btn.jpg'
-lvl1_btn_img = 'Waterboy-SimpleGUI/images/lvl1_btn.jpg'
-lvl2_btn_img = 'Waterboy-SimpleGUI/images/lvl2_btn.jpg'
-lvl3_btn_img = 'Waterboy-SimpleGUI/images/lvl3_btn.jpg'
-lvl4_btn_img = 'Waterboy-SimpleGUI/images/lvl4_btn.jpg'
+exit_btn_img = 'images/exit_btn.jpg'
+lvl1_btn_img = 'images/lvl1_btn.jpg'
+lvl2_btn_img = 'images/lvl2_btn.jpg'
+lvl3_btn_img = 'images/lvl3_btn.jpg'
+lvl4_btn_img = 'images/lvl4_btn.jpg'
 
 
 

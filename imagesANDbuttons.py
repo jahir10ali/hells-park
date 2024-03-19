@@ -5,7 +5,7 @@ except ImportError:
 
 class Button:
     def __init__(self, image_path, pos_x, pos_y, width, height):
-        self.image = simplegui._load_local_image(image_path)
+        self.image = simplegui.load_image(image_path)
         self.pos_x = pos_x
         self.pos_y = pos_y
         self.width = width

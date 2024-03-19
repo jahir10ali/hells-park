@@ -24,7 +24,7 @@ platform_gap = 150
 platform_width = 200
 platform_positions = [(100, 500), (350, 400), (600, 300), (250, 200)]
 
-exit_btn_img = 'images\\exit_btn.jpg'
+exit_btn_img = 'https://i.ibb.co/r29NXsx/exit-btn.jpg'
 
 def draw(canvas):
     global exit_btn, block_pos

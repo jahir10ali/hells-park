@@ -18,7 +18,7 @@ move_speed = 5
 is_moving_left = False
 is_moving_right = False
 
-exit_btn_img = 'images\\exit_btn.jpg'
+exit_btn_img = 'https://i.ibb.co/r29NXsx/exit-btn.jpg'
 
 def draw(canvas):
     global exit_btn, block_pos

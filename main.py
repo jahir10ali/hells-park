@@ -10,8 +10,6 @@ canvas_height = 600
 # Create a global frame
 frame = simplegui.create_frame('Hells Park', canvas_width, canvas_height, 0)
 
-
-
 # Import other modules
 import menu
 

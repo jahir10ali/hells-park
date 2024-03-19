@@ -1,10 +1,10 @@
 from imagesANDbuttons import draw_button
 
-exit_btn_img = 'images/exit_btn.jpg'
-lvl1_btn_img = 'images/lvl1_btn.jpg'
-lvl2_btn_img = 'images/lvl2_btn.jpg'
-lvl3_btn_img = 'images/lvl3_btn.jpg'
-lvl4_btn_img = 'images/lvl4_btn.jpg'
+exit_btn_img = 'https://i.ibb.co/r29NXsx/exit-btn.jpg'
+lvl1_btn_img = 'https://i.ibb.co/w6mffKs/lvl1-btn.jpg'
+lvl2_btn_img = 'https://i.ibb.co/T00PSt2/lvl2-btn.jpg'
+lvl3_btn_img = 'https://i.ibb.co/sVpmNqN/lvl3-btn.jpg'
+lvl4_btn_img = 'https://i.ibb.co/zRCyy2T/lvl4-btn.jpg'
 
 
 

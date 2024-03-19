@@ -1,8 +1,7 @@
 from imagesANDbuttons import draw_button, draw_image
 
-exit_btn_img = 'images\\exit_btn.jpg'
-bg_img =  'images\\background.png'
-bg_img = 'images\htp_bg.jpg'
+exit_btn_img = 'https://i.ibb.co/r29NXsx/exit-btn.jpg'
+bg_img = 'https://i.ibb.co/85Tb9GS/htp-bg.jpg'
 
 def draw(canvas):
     global exit_btn 

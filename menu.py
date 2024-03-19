@@ -6,10 +6,10 @@ except ImportError:
     import SimpleGUICS2Pygame.simpleguics2pygame as simplegui
 
 
-play_btn_img = 'https://i.ibb.co/CscppQV/play-btn.jpg'  
-htp_btn_img = 'images/htp_btn.jpg'
-exit_btn_img = 'images/exit_btn.jpg'
-title_img = 'images/title.jpg'
+play_btn_img = 'https://i.ibb.co/KFG5ms3/play-btn.jpg'  
+htp_btn_img = 'https://i.ibb.co/2kCBLmH/htp-btn.jpg'
+exit_btn_img = 'https://i.ibb.co/r29NXsx/exit-btn.jpg'
+title_img = 'https://i.ibb.co/vPPxZ7X/title.png'
 
 
 # Define draw function to load and draw the image

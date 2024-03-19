@@ -27,7 +27,7 @@ def draw_button(canvas, imagePath, pos_x, pos_y, width, height):
 
 
 def draw_image(canvas, imagePath, pos_x, pos_y, width, height):
-    image = simplegui._load_local_image(imagePath)
+    image = simplegui.load_image(imagePath)
 
     canvas.draw_image(image, (image.get_width()/2, image.get_height()/2), 
                       (image.get_width(), image.get_height()), (pos_x, pos_y), 

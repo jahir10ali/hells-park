@@ -30,12 +30,14 @@ block_pos = Vector(140, 588 - platforms[0]["height"] / 2 - block_size / 2)
 
 exit_btn_img = 'https://i.ibb.co/r29NXsx/exit-btn.jpg'
 lvl2_bg_img = 'https://i.ibb.co/gjTgc9B/lvl2-bg.jpg'
+reset_btn_img = 'https://i.ibb.co/p08zvqP/reset-btn.jpg'
 
 
 def draw(canvas):
-    global exit_btn, block_pos
+    global exit_btn, reset_btn, block_pos
     lvl2_bg = draw_image(canvas, lvl2_bg_img, 450, 300, 900, 600)
-    exit_btn = draw_button(canvas, exit_btn_img, 750, 20, 125, 50)
+    reset_btn = draw_button(canvas, reset_btn_img, 730, 20, 40, 40)
+    exit_btn = draw_button(canvas, exit_btn_img, 790, 20, 93.75, 37.5)
     # Draw block
     canvas.draw_polygon([(block_pos.x - block_size / 2, block_pos.y - block_size / 2),
                          (block_pos.x + block_size / 2, block_pos.y - block_size / 2),
@@ -136,8 +138,10 @@ def is_on_platform():
     return False
 
 def click(pos, frame):
-    global exit_btn, timer
-    if exit_btn.is_clicked(pos):
+    global exit_btn, reset_btn, block_pos, timer
+    if reset_btn.is_clicked(pos):
+        block_pos = Vector(140, 588 - platforms[0]["height"] / 2 - block_size / 2)
+    elif exit_btn.is_clicked(pos):
         import levels
         frame.set_draw_handler(levels.draw)
         frame.set_mouseclick_handler(lambda pos: levels.click(pos, frame))

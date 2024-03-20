@@ -19,9 +19,11 @@ is_moving_left = False
 is_moving_right = False
 
 exit_btn_img = 'https://i.ibb.co/r29NXsx/exit-btn.jpg'
+lvl2_bg_img = 'https://i.ibb.co/gjTgc9B/lvl2-bg.jpg'
 
 def draw(canvas):
     global exit_btn, block_pos
+    lvl2_bg = draw_image(canvas, lvl2_bg_img, 450, 300, 900, 600)
     exit_btn = draw_button(canvas, exit_btn_img, 785, 15, 93.75, 37.5)
     canvas.draw_polygon([(block_pos.x - block_size / 2, block_pos.y - block_size / 2),
                          (block_pos.x + block_size / 2, block_pos.y - block_size / 2),

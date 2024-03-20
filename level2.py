@@ -6,7 +6,6 @@ except ImportError:
 from imagesANDbuttons import draw_button, draw_image
 from vector import Vector
 
-# Global variables
 canvas_width = 900
 canvas_height = 600
 block_size = 50
@@ -17,35 +16,39 @@ move_speed = 5
 is_moving_left = False
 is_moving_right = False
 
-# Platform variables
 platforms = [
-    {"pos": (140, 588), "width": 150, "height": 30},  # Platform 1
-    {"pos": (255, 550), "width": 80, "height": 100},  # Platform 3
-    {"pos": (600, 300), "width": 200, "height": 20},  # Platform 4
-    {"pos": (250, 200), "width": 200, "height": 20},  # Platform 5
-    {"pos": (740, 200), "width": 200, "height": 20},  # Platform 6
+    {"pos": (70, 588), "width": 130, "height": 30},
+    {"pos": (165, 550), "width": 80, "height": 100},
+    {"pos": (320, 440), "width": 150, "height": 30},
+    {"pos": (520, 550), "width": 80, "height": 200},
+    {"pos": (670, 380), "width": 150, "height": 30},
+    {"pos": (840, 550), "width": 80, "height": 450},
+    {"pos": (670, 200), "width": 150, "height": 30},
+    {"pos": (455, 200), "width": 80, "height": 100},
+    {"pos": (140, 150), "width": 260, "height": 30},
 ]
 
-block_pos = Vector(140, 588 - platforms[0]["height"] / 2 - block_size / 2)
+block_pos = Vector(70, 588 - platforms[0]["height"] / 2 - block_size / 2)
 
 exit_btn_img = 'https://i.ibb.co/r29NXsx/exit-btn.jpg'
+play_btn_img = 'https://i.ibb.co/KFG5ms3/play-btn.jpg'  
 lvl2_bg_img = 'https://i.ibb.co/gjTgc9B/lvl2-bg.jpg'
 reset_btn_img = 'https://i.ibb.co/p08zvqP/reset-btn.jpg'
+pause_btn_img = 'https://i.ibb.co/LkHqxxz/pause-btn.jpg'
+paused_screen_img = 'https://i.ibb.co/ZdXM7LN/paused-screen.png'
 
 
 def draw(canvas):
-    global exit_btn, reset_btn, block_pos
+    global exit_btn, reset_btn, pause_btn, block_pos
     lvl2_bg = draw_image(canvas, lvl2_bg_img, 450, 300, 900, 600)
-    reset_btn = draw_button(canvas, reset_btn_img, 730, 20, 40, 40)
-    exit_btn = draw_button(canvas, exit_btn_img, 790, 20, 93.75, 37.5)
-    # Draw block
+    reset_btn = draw_button(canvas, reset_btn_img, 830, 20, 50, 50)
+    pause_btn = draw_button(canvas, pause_btn_img, 760, 20, 50, 50)
     canvas.draw_polygon([(block_pos.x - block_size / 2, block_pos.y - block_size / 2),
                          (block_pos.x + block_size / 2, block_pos.y - block_size / 2),
                          (block_pos.x + block_size / 2, block_pos.y + block_size / 2),
                          (block_pos.x - block_size / 2, block_pos.y + block_size / 2)],
                         1, 'Red', 'Red')
     
-    # Draw platforms
     for platform in platforms:
         x, y = platform["pos"]
         width = platform["width"]
@@ -55,6 +58,13 @@ def draw(canvas):
                              (x + width / 2, y + height / 2),
                              (x - width / 2, y + height / 2)],
                             3, '#92620F', '#C49139')
+
+def draw_pause(canvas):
+    global play_btn, exit_btn, reset_btn, pause_btn, block_pos, paused_screen
+    paused_screen = draw_image(canvas, paused_screen_img, 450, 300, 900, 600)
+    play_btn = draw_button(canvas, play_btn_img, 500, 450, 250, 100)
+    exit_btn = draw_button(canvas, exit_btn_img, 150, 450, 250, 100)
+
 
 
 def keydown(key):
@@ -88,24 +98,20 @@ def keyup(key):
 def update():
     global block_pos, is_jumping, jump_strength, gravity
 
-    # Move left if allowed
     if is_moving_left and block_pos.x - block_size / 2 > 0:
         block_pos.x -= move_speed
 
-    # Move right if allowed
     if is_moving_right and block_pos.x + block_size / 2 < canvas_width:
         block_pos.x += move_speed
 
-    # Apply jump
     if is_jumping:
         block_pos.y -= jump_strength
-        jump_strength -= gravity  # Apply gravity to decrease jump height
+        jump_strength -= gravity  
 
         if block_pos.y >= canvas_height - block_size / 2:
             is_jumping = False
-            jump_strength = 15  # Reset jump strength when landing
+            jump_strength = 15  
 
-        # Check for collision with platforms
         for platform in platforms:
             x, y = platform["pos"]
             width = platform["width"]
@@ -117,17 +123,14 @@ def update():
                 block_pos.y = y - height / 2 - block_size / 2
                 break
 
-    # Ensure the player stays on the canvas floor
     if block_pos.y + block_size / 2 > canvas_height:
         block_pos.y = canvas_height - block_size / 2
 
-    # Apply gravity when not on a platform
     if not is_on_platform():
         block_pos.y += gravity
 
 
 def is_on_platform():
-    # Check if the player is on any platform
     for platform in platforms:
         x, y = platform["pos"]
         width = platform["width"]
@@ -137,19 +140,23 @@ def is_on_platform():
             return True
     return False
 
+
 def click(pos, frame):
-    global exit_btn, reset_btn, block_pos, timer
-    if reset_btn.is_clicked(pos):
-        block_pos = Vector(140, 588 - platforms[0]["height"] / 2 - block_size / 2)
+    global play_btn, exit_btn, reset_btn, pause_btn, timer, block_pos
+    if pause_btn.is_clicked(pos):
+        frame.set_draw_handler(draw_pause)
+    elif reset_btn.is_clicked(pos):
+        block_pos = Vector(70, 588 - platforms[0]["height"] / 2 - block_size / 2)
     elif exit_btn.is_clicked(pos):
+        timer.stop()
         import levels
         frame.set_draw_handler(levels.draw)
         frame.set_mouseclick_handler(lambda pos: levels.click(pos, frame))
-        try:
-            timer.stop()
-        except ValueError:
-            pass  # Timer may already be stopped
+    elif play_btn.is_clicked(pos):
+        frame.set_draw_handler(draw)
 
 
 timer = simplegui.create_timer(1000 // 60, update)
 timer.start()
+
+           

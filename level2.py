@@ -22,7 +22,7 @@ exit_btn_img = 'https://i.ibb.co/r29NXsx/exit-btn.jpg'
 
 def draw(canvas):
     global exit_btn, block_pos
-    exit_btn = draw_button(canvas, exit_btn_img, 750, 20, 93.75, 37.5)
+    exit_btn = draw_button(canvas, exit_btn_img, 785, 15, 93.75, 37.5)
     canvas.draw_polygon([(block_pos.x - block_size / 2, block_pos.y - block_size / 2),
                          (block_pos.x + block_size / 2, block_pos.y - block_size / 2),
                          (block_pos.x + block_size / 2, block_pos.y + block_size / 2),
@@ -48,10 +48,23 @@ def keyup(key):
 def jump():
     global is_jumping, jump_strength
     is_jumping = True
-    jump_strength = 15  # Reset jump strength when jumping
+    jump_strength = 17  # Reset jump strength when jumping
 
 def update():
-    global block_pos, is_jumping, is_moving_left, is_moving_right, jump_strength
+    global block_pos, is_jumping, jump_strength
+
+    # Apply gravity if the block is not jumping and not at the bottom
+    if not is_jumping and block_pos.y < canvas_height - block_size / 2:
+        block_pos.y += gravity
+
+    # Apply jump
+    if is_jumping:
+        block_pos.y -= jump_strength
+        jump_strength -= gravity  # Apply gravity to decrease jump height
+
+        if block_pos.y >= canvas_height - block_size / 2:
+            is_jumping = False
+            block_pos.y = canvas_height - block_size / 2  # Ensure block is on the ground
 
     # Move left if allowed
     if is_moving_left and block_pos.x - block_size / 2 > 0:
@@ -61,13 +74,6 @@ def update():
     if is_moving_right and block_pos.x + block_size / 2 < canvas_width:
         block_pos.x += move_speed
 
-    # Apply jump
-    if is_jumping:
-        block_pos.y -= jump_strength
-        jump_strength -= gravity  # Apply gravity to decrease jump height
-
-        if block_pos.y >= canvas_height - block_size / 2:
-            is_jumping = False
 
 def click(pos, frame):
     global exit_btn

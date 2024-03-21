@@ -9,8 +9,8 @@ from vector import Vector
 canvas_width = 900
 canvas_height = 600
 block_size = 50
-jump_strength = 15
-gravity = 0.8
+jump_strength = 18
+gravity = 9.81
 is_jumping = False
 move_speed = 5
 is_moving_left = False
@@ -39,7 +39,7 @@ paused_screen_img = 'https://i.ibb.co/ZdXM7LN/paused-screen.png'
 
 
 def draw(canvas):
-    global exit_btn, reset_btn, pause_btn, block_pos
+    global reset_btn, pause_btn, block_pos
     lvl2_bg = draw_image(canvas, lvl2_bg_img, 450, 300, 900, 600)
     reset_btn = draw_button(canvas, reset_btn_img, 830, 20, 50, 50)
     pause_btn = draw_button(canvas, pause_btn_img, 760, 20, 50, 50)
@@ -106,7 +106,7 @@ def update():
 
     if is_jumping:
         block_pos.y -= jump_strength
-        jump_strength -= gravity  
+        jump_strength -= 0.8  
 
         if block_pos.y >= canvas_height - block_size / 2:
             is_jumping = False
@@ -124,10 +124,15 @@ def update():
                 break
 
     if block_pos.y + block_size / 2 > canvas_height:
-        block_pos.y = canvas_height - block_size / 2
+        block_pos.y = canvas_height-1 - block_size / 2
 
     if not is_on_platform():
         block_pos.y += gravity
+        
+    else:
+        jump_strength = 24
+    
+
 
 
 def is_on_platform():

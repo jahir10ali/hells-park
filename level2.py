@@ -9,7 +9,7 @@ from vector import Vector
 canvas_width = 900
 canvas_height = 600
 block_size = 50
-jump_strength = 18
+jump_strength = 26
 gravity = 9.81
 is_jumping = False
 move_speed = 5
@@ -110,18 +110,22 @@ def update():
 
         if block_pos.y >= canvas_height - block_size / 2:
             is_jumping = False
-            jump_strength = 15  
+            jump_strength = 24
 
         for platform in platforms:
             x, y = platform["pos"]
             width = platform["width"]
             height = platform["height"]
-            if (x - width / 2 <= block_pos.x <= x + width / 2 and
-                y - height / 2 <= block_pos.y + block_size / 2 <= y + height / 2):
+
+
+            if (x - width / 2 <= block_pos.x  <= x + width / 2 and
+                y - height / 2 <= block_pos.y  + block_size / 2 <= y + height / 2):
                 is_jumping = False
-                jump_strength = 15
+                jump_strength = 18
                 block_pos.y = y - height / 2 - block_size / 2
                 break
+            
+                
 
     if block_pos.y + block_size / 2 > canvas_height:
         block_pos.y = canvas_height-1 - block_size / 2
@@ -132,6 +136,10 @@ def update():
     else:
         jump_strength = 24
     
+    
+    
+    
+
 
 
 
@@ -145,6 +153,10 @@ def is_on_platform():
             return True
     return False
 
+
+
+            
+           
 
 def click(pos, frame):
     global play_btn, exit_btn, reset_btn, pause_btn, timer, block_pos

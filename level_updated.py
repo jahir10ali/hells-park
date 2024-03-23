@@ -212,6 +212,7 @@ platformsTWO = [
     Platform((560, 90), 315, 30),
     Platform((878, 1), 20, 120),
     Platform((560, -32), 315, 30),
+    Platform((900, 1), 20, CANVAS_HEIGHT),
 ]
 
 block_pos = Vector(platformsONE[0].width / 2, 500)

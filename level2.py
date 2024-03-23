@@ -9,8 +9,8 @@ from vector import Vector
 canvas_width = 900
 canvas_height = 600
 block_size = 50
-jump_strength = 18
-gravity = 9.81
+jump_strength = 15
+gravity = 0.5
 is_jumping = False
 move_speed = 5
 is_moving_left = False
@@ -98,20 +98,24 @@ def keyup(key):
 def update():
     global block_pos, is_jumping, jump_strength, gravity
 
+    # Movement controls
     if is_moving_left and block_pos.x - block_size / 2 > 0:
         block_pos.x -= move_speed
 
     if is_moving_right and block_pos.x + block_size / 2 < canvas_width:
         block_pos.x += move_speed
 
+    # Jumping mechanics
     if is_jumping:
         block_pos.y -= jump_strength
-        jump_strength -= 0.8  
+        jump_strength -= gravity
 
+        # Check if block hits the ground
         if block_pos.y >= canvas_height - block_size / 2:
             is_jumping = False
-            jump_strength = 15  
+            jump_strength = 12
 
+        # Check if block collides with any platform
         for platform in platforms:
             x, y = platform["pos"]
             width = platform["width"]
@@ -123,16 +127,31 @@ def update():
                 block_pos.y = y - height / 2 - block_size / 2
                 break
 
-    if block_pos.y + block_size / 2 > canvas_height:
-        block_pos.y = canvas_height-1 - block_size / 2
+    # Check collision with platform sides and bottom
+    on_platform = False
+    for platform in platforms:
+        x, y = platform["pos"]
+        width = platform["width"]
+        height = platform["height"]
+        if (x - width / 2 <= block_pos.x + block_size / 2 <= x + width / 2 or
+            x - width / 2 <= block_pos.x - block_size / 2 <= x + width / 2) and \
+                y - height / 2 <= block_pos.y + block_size / 2 <= y + height / 2:
+            if block_pos.y + block_size / 2 < y - height / 2 + 2:  # Check if block is above the top edge of platform
+                on_platform = True
+            elif block_pos.y - block_size / 2 > y + height / 2 - 2:  # Check if block hits the bottom edge of platform
+                block_pos.y = y + height / 2 + block_size / 2
+            elif block_pos.x + block_size / 2 > x + width / 2:  # If block hits right side of platform
+                block_pos.x = x + width / 2 + block_size / 2
+            elif block_pos.x - block_size / 2 < x - width / 2:  # If block hits left side of platform
+                block_pos.x = x - width / 2 - block_size / 2
 
-    if not is_on_platform():
+    # If not on platform and not jumping, apply gravity
+    if not on_platform and not is_jumping:
         block_pos.y += gravity
-        
-    else:
-        jump_strength = 24
-    
 
+    # Boundaries checking (similar to canvas edges)
+    if block_pos.y + block_size / 2 > canvas_height:
+        block_pos.y = canvas_height - block_size / 2
 
 
 def is_on_platform():

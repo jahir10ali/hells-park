@@ -1,5 +1,10 @@
-import simplegui
-from user305_o32FtUyCKk_0 import Vector
+try:
+    import simplegui
+except ImportError:
+    import SimpleGUICS2Pygame.simpleguics2pygame as simplegui
+
+from imagesANDbuttons import draw_button, draw_image
+from vector import Vector
 
 # Constants
 CANVAS_WIDTH = 900
@@ -141,7 +146,7 @@ class Player:
         
         
         
-frame = simplegui.create_frame("Block Wall", CANVAS_WIDTH, CANVAS_HEIGHT)           
+frame = simplegui.create_frame("Block Wall", CANVAS_WIDTH, CANVAS_HEIGHT, 0)           
        
 
 class Interaction:

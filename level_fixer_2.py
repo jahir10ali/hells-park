@@ -3,6 +3,8 @@ try:
 except ImportError:
     import SimpleGUICS2Pygame.simpleguics2pygame as simplegui
 from vector import Vector
+from imagesANDbuttons import draw_button, draw_image
+
 
 # Constants
 CANVAS_WIDTH = 900
@@ -229,7 +231,7 @@ class Player:
         
         
         
-frame = simplegui.create_frame("Block Wall", CANVAS_WIDTH, CANVAS_HEIGHT, 0)           
+#frame = simplegui.create_frame("Block Wall", CANVAS_WIDTH, CANVAS_HEIGHT, 0)           
        
 
 class Interaction:
@@ -408,9 +410,9 @@ def keyup(key):
         player.stop_move_right()
 
 # Set the draw handler to i.drawONE initially
-frame.set_draw_handler(i.draw)
+#frame.set_draw_handler(i.draw)
 
-frame.set_keydown_handler(keydown)
-frame.set_keyup_handler(keyup)
+#frame.set_keydown_handler(keydown)
+#frame.set_keyup_handler(keyup)
 
-frame.start()
+#frame.start()

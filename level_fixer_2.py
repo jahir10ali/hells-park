@@ -249,6 +249,13 @@ class Interaction:
         self.coin_count = 0  # Counter for collected coins
         self.initial_coins_len = len(self.coinsONE) + len(self.coinsTWO)
 
+        # Buttons
+        self.pause_btn_img = 'https://i.ibb.co/LkHqxxz/pause-btn.jpg'
+        self.paused_screen_img = 'https://i.ibb.co/ZdXM7LN/paused-screen.png'
+        self.play_btn_img = 'https://i.ibb.co/KFG5ms3/play-btn.jpg' 
+        self.exit_btn_img = 'https://i.ibb.co/r29NXsx/exit-btn.jpg'
+        self.reset_btn_img = 'https://i.ibb.co/p08zvqP/reset-btn.jpg'
+
 
     def update(self):
         if self.current_screen == 1:
@@ -268,15 +275,12 @@ class Interaction:
     def draw(self, canvas):
         self.update()
         self.player.draw(canvas)
+        self.pause_btn = draw_button(canvas, self.pause_btn_img, 760, 20, 50, 50)
         if self.current_screen == 1 and not self.game_over:
             canvas.draw_image(arrow, (arrow.get_width()/2, arrow.get_height()/2), 
                                   (arrow.get_width(), arrow.get_height()), (660, 170), 
                                   (arrow.get_width()/5, arrow.get_height()/3), 4.7)
             canvas.draw_text("This way", (760, 180), 20, "White", "monospace")
-        #canvas.draw_image(arrow, (arrow.get_width()/2, arrow.get_height()/2), 
-                              #(arrow.get_width(), arrow.get_height()), (660, 420), 
-                              #(arrow.get_width()/5, arrow.get_height()/3), 4.7)
-        #canvas.draw_text("This way", (760, 430), 20, "White", "monospace")
         if self.current_screen == 2 and not self.game_over:
             canvas.draw_image(finish_line, (finish_line.get_width()/2, finish_line.get_height()/2), 
                                   (finish_line.get_width(), finish_line.get_height()), (500, 500), 
@@ -317,6 +321,19 @@ class Interaction:
                               (troll_face.get_width()/3, troll_face.get_height()/3))
             #game_over_sound.play()
 
+    def drawTWO(self, canvas):
+        self.paused_screen = draw_image(canvas, self.paused_screen_img, 450, 300, 900, 600)
+        self.play_btn = draw_button(canvas, self.play_btn_img, 500, 450, 250, 100)
+        self.exit_btn = draw_button(canvas, self.exit_btn_img, 150, 450, 250, 100)
+
+
+    def handle_mouse_click(self, pos, frame, draw, drawTWO):
+        if self.pause_btn.is_clicked(pos):
+            frame.set_draw_handler(drawTWO)
+        elif self.exit_btn.is_clicked(pos):
+            import levels
+            frame.set_draw_handler(levels.draw)
+            frame.set_mouseclick_handler(lambda pos: levels.click(pos, frame))
 
     def switch_screen(self):
         if self.current_screen == 1:
@@ -409,10 +426,7 @@ def keyup(key):
     elif key == simplegui.KEY_MAP["d"] or key == simplegui.KEY_MAP["right"]:
         player.stop_move_right()
 
-# Set the draw handler to i.drawONE initially
-#frame.set_draw_handler(i.draw)
 
-#frame.set_keydown_handler(keydown)
-#frame.set_keyup_handler(keyup)
+def click(pos, frame):
+    i.handle_mouse_click(pos, frame, i.draw, i.drawTWO) 
 
-#frame.start()

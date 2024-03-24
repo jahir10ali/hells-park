@@ -42,7 +42,7 @@ def click(pos, frame):
         frame.set_draw_handler(level_fixer_2.i.draw)
         frame.set_keydown_handler(level_fixer_2.keydown)
         frame.set_keyup_handler(level_fixer_2.keyup)
-        #frame.set_mouseclick_handler(lambda pos: level_fixer_2.click(pos, frame))
+        frame.set_mouseclick_handler(lambda pos: level_fixer_2.click(pos, frame))
     elif lvl4_btn.is_clicked(pos):
         import level4
         frame.set_draw_handler(level4.draw)

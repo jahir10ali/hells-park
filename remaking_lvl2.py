@@ -36,7 +36,7 @@ class Platform:
                              (self.x + self.width, self.y),
                              (self.x + self.width, self.y + self.height),
                              (self.x, self.y + self.height)],
-                            3, 'White', 'Blue')
+                            3, '#92620F', '#C49139')
 
     def hit(self, player):
         return player.offset_l() <= self.edge_r and player.offset_r() >= self.edge_l \
@@ -63,7 +63,7 @@ class Trap:
 
     def draw(self, canvas):
         for spike in self.spikes:
-            canvas.draw_polygon(spike, 1, "#326F28", "#326F28")
+            canvas.draw_polygon(spike, 3, "#5F5F5F", "#A5A2A2")
 
     def hit(self, player):
         return player.offset_l() <= self.edge_r and player.offset_r() >= self.edge_l \
@@ -231,6 +231,10 @@ class Interaction:
         self.lives_count = 3  # Flag to track if game over
         self.coin_count = 0  # Counter for collected coins
         self.initial_coins_len = len(self.coins)
+        
+        # Images
+        
+        self.lvl2_bg = simplegui.load_image('https://i.ibb.co/gjTgc9B/lvl2-bg.jpg')
 
 
     def update(self):
@@ -246,6 +250,10 @@ class Interaction:
 
         
     def draw(self, canvas):
+        #canvas.draw_image(self.lvl2_bg, (1521 / 2, 1818 / 2), (1521, 1818), (50, 50), (100, 100))
+        canvas.draw_image(self.lvl2_bg, (self.lvl2_bg.get_width()/2, self.lvl2_bg.get_height()/2), 
+                      (self.lvl2_bg.get_width(), self.lvl2_bg.get_height()), (CANVAS_WIDTH/2, CANVAS_HEIGHT/2), 
+                      (CANVAS_WIDTH, CANVAS_HEIGHT))
         self.update()
         self.player.draw(canvas)
         #if not self.game_over:
@@ -262,11 +270,11 @@ class Interaction:
             coin.draw(canvas)
         
         # Draw coin count
-        canvas.draw_text("Coins collected: " + str(self.coin_count) + "/" + str(self.initial_coins_len), (350, 40), 20, "White", "monospace") 
+        canvas.draw_text("Coins collected: " + str(self.coin_count) + "/" + str(self.initial_coins_len), (350, 40), 20, "Black", "monospace") 
         if self.coin_count != self.initial_coins_len:
-            canvas.draw_text("Collect all coins to finish level", (270, 20), 20, "White", "monospace")
+            canvas.draw_text("Collect all coins to finish level", (270, 20), 20, "Black", "monospace")
         else:
-            canvas.draw_text("All coins collected, reach finish line", (255, 20), 20, "White", "monospace")
+            canvas.draw_text("All coins collected, reach finish line", (255, 20), 20, "Black", "monospace")
     
     
         # Draw "Game Over" text if game over
@@ -295,7 +303,7 @@ platforms = [
     Platform((50, 185), 60, 20),
     Platform((120, 100), 60, 20),
     Platform((300, 60), 60, 20),
-    Platform((465, 60), 432, 20),
+    Platform((450, 60), 445, 20),
     Platform((0, -22), CANVAS_WIDTH, 20), # canvas ceiling using a platform
     Platform((900,0), 20, CANVAS_HEIGHT), # canvas edge using a platform
 ]
@@ -307,16 +315,23 @@ block_pos = Vector(platforms[0].width / 2, 500)
 player = Player(block_pos)
 
 traps = [
-    #Trap(12, (276, 600), 39, 40),  # Creates a Trap with 12 spikes in a row
-    #Trap(10, (723, 600), 39, 40),  # Creates a Trap with 10 spikes in a row
-    #Trap(2, (550, 68), 30, 15),
+    Trap(13, (187, 600), 38, 40),
+    Trap(1, (310, 438), 38, 30),
+    Trap(13, (497, 600), 38, 40),
+    Trap(1, (840, 576), 36.5, 38),  
+    Trap(1, (260, 268), 38, 25),
+    Trap(1, (600, 58), 38, 15),
 ]
 
 
 coins = [
-    #Coin((64,33), 20, 3),
-    #Coin((364,273), 20, 3),
-    #Coin((770,273), 20, 3),
+    Coin((139,505), 20, 3),
+    Coin((254,415), 20, 3),
+    Coin((780,553), 20, 3),
+    Coin((204,245), 20, 3),
+    Coin((154,75), 20, 3),
+    Coin((504,35), 20, 3),
+    Coin((704,35), 20, 3),
     #Coin((650,45), 20, 3),
     #Coin((660,540), 20, 3),
 ]

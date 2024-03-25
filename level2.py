@@ -5,7 +5,6 @@ except ImportError:
 from vector import Vector
 from imagesANDbuttons import draw_button, draw_image
 
-
 # Constants
 CANVAS_WIDTH = 900
 CANVAS_HEIGHT = 600
@@ -16,7 +15,7 @@ FLOOR_Y = CANVAS_HEIGHT - PLAYER_SIZE / 2  # Y-coordinate of the floor
 
 troll_face = simplegui.load_image('https://i.ibb.co/q0nG6Qd/troll-face.png')
 game_over_sound = simplegui.load_sound('https://audio.jukehost.co.uk/4rXY9bKqh9LnxFndLGst7Xs9U9YpKr9b')
-troll_laugh = simplegui.load_sound('https://audio.jukehost.co.uk/AbmCCtjkcbKmoolGFCixHvlik4zfDVES')
+#troll_laugh = simplegui.load_sound('https://audio.jukehost.co.uk/AbmCCtjkcbKmoolGFCixHvlik4zfDVES')
 game_over_sound.set_volume(0.2)
 coin_sound = simplegui.load_sound('https://audio.jukehost.co.uk/UeryrWle3hDSLEgIqrA2zyNG0mNqX15F')
 jump_sound = simplegui.load_sound('https://audio.jukehost.co.uk/849X7g5DQKqnC6dGOuU1asWeUx4D1GUy')
@@ -41,7 +40,7 @@ class Platform:
                              (self.x + self.width, self.y),
                              (self.x + self.width, self.y + self.height),
                              (self.x, self.y + self.height)],
-                            3, 'White', 'Blue')
+                            3, '#92620F', '#C49139')
 
     def hit(self, player):
         return player.offset_l() <= self.edge_r and player.offset_r() >= self.edge_l \
@@ -68,7 +67,7 @@ class Trap:
 
     def draw(self, canvas):
         for spike in self.spikes:
-            canvas.draw_polygon(spike, 1, "#326F28", "#326F28")
+            canvas.draw_polygon(spike, 3, "#5F5F5F", "#A5A2A2")
 
     def hit(self, player):
         return player.offset_l() <= self.edge_r and player.offset_r() >= self.edge_l \
@@ -126,23 +125,15 @@ class Player:
             self.on_ground = True
         else:
             self.on_ground = False
-            
-        # Ensure player stays within canvas bounds
-        # n/a
+          
         
+        # Ensure player stays within canvas bounds
         # Check if player hits the right edge of the screen
-        if self.pos.x > CANVAS_WIDTH and i.current_screen == 1:
-            i.switch_screen()
-            self.pos.x = 0  # Reset player position to start of the next screen
-        elif self.pos.x > CANVAS_WIDTH and i.current_screen == 2:
+        if self.pos.x > CANVAS_WIDTH:
             self.pos.x = CANVAS_WIDTH 
-
         # Check if player hits the left edge of the screen
-        if self.pos.x < 0 and i.current_screen == 1:
-            self.pos.x = 0
-        elif self.pos.x < 0 and i.current_screen == 2:
-            i.switch_screen()
-            self.pos.x = CANVAS_WIDTH  # Reset player position to end of the previous screen
+        if self.pos.x < PLAYER_SIZE / 2:
+            self.pos.x = PLAYER_SIZE / 2
 
 
         # Check for collisions with platforms
@@ -228,27 +219,19 @@ class Player:
     def stop_move_right(self):
         self.moving_right = False
 
-        
-        
-        
-#frame = simplegui.create_frame("Block Wall", CANVAS_WIDTH, CANVAS_HEIGHT, 0)           
-       
+               
 
 class Interaction:
-    def __init__(self, platformsONE, platformsTWO, player, trapsONE, trapsTWO, coinsONE, coinsTWO):
+    def __init__(self, platforms, player, traps, coins):
         self.player = player
-        self.platformsONE = platformsONE
-        self.platformsTWO = platformsTWO
-        self.trapsONE = trapsONE
-        self.trapsTWO = trapsTWO
-        self.coinsONE = coinsONE
-        self.coinsTWO = coinsTWO
-        self.current_screen = 1  # Initially set to Screen ONE
+        self.platforms = platforms
+        self.traps = traps
+        self.coins = coins
         self.game_over = False  # Flag to track if game over
         self.lives_count = 3  # Flag to track if game over
         self.coin_count = 0  # Counter for collected coins
-        self.initial_coins_len = len(self.coinsONE) + len(self.coinsTWO)
-
+        self.initial_coins_len = len(self.coins)
+        
         # Buttons
         self.pause_btn_img = 'https://i.ibb.co/LkHqxxz/pause-btn.jpg'
         self.paused_screen_img = 'https://i.ibb.co/ZdXM7LN/paused-screen.png'
@@ -256,12 +239,12 @@ class Interaction:
         self.exit_btn_img = 'https://i.ibb.co/r29NXsx/exit-btn.jpg'
         self.reset_btn_img = 'https://i.ibb.co/p08zvqP/reset-btn.jpg'
 
+        # Images
+        self.lvl2_bg = 'https://i.ibb.co/gjTgc9B/lvl2-bg.jpg'
+
 
     def update(self):
-        if self.current_screen == 1:
-            self.player.update(self.platformsONE, self.trapsONE, self.coinsONE)
-        elif self.current_screen == 2:
-            self.player.update(self.platformsTWO, self.trapsTWO, self.coinsTWO)
+        self.player.update(self.platforms, self.traps, self.coins)
         
         # Check for game over condition
         if not self.player.can_move:
@@ -269,51 +252,38 @@ class Interaction:
 
         
         # Update coin count
-        self.coin_count = self.initial_coins_len - len(self.coinsONE) - len(self.coinsTWO)
+        self.coin_count = self.initial_coins_len - len(self.coins)
 
         
     def draw(self, canvas):
+        draw_image(canvas, self.lvl2_bg, 450, 300, 900, 600)
         self.update()
         self.player.draw(canvas)
-        self.pause_btn = draw_button(canvas, self.pause_btn_img, 760, 20, 50, 50)
-        if self.current_screen == 1 and not self.game_over:
-            canvas.draw_image(arrow, (arrow.get_width()/2, arrow.get_height()/2), 
-                                  (arrow.get_width(), arrow.get_height()), (660, 170), 
-                                  (arrow.get_width()/5, arrow.get_height()/3), 4.7)
-            canvas.draw_text("This way", (760, 180), 20, "White", "monospace")
-        if self.current_screen == 2 and not self.game_over:
-            canvas.draw_image(finish_line, (finish_line.get_width()/2, finish_line.get_height()/2), 
-                                  (finish_line.get_width(), finish_line.get_height()), (500, 500), 
-                                  (finish_line.get_width(), finish_line.get_height()))
-        if self.current_screen == 1:
-            for platform in self.platformsONE:
-                platform.draw(canvas)
-            for trap in self.trapsONE:
-                trap.draw(canvas)
-            for coin in self.coinsONE:
-                coin.draw(canvas)
-        elif self.current_screen == 2:
-            canvas.draw_circle([80, 65], 20, 3, 'Yellow', 'Orange')
-            canvas.draw_text("^^ Don't forget this coin! ^^", (10, 140), 15, "White", "monospace")
-            for trap in self.trapsTWO:
-                trap.draw(canvas)
-            for platform in self.platformsTWO:
-                platform.draw(canvas)
-            for coin in self.coinsTWO:
-                coin.draw(canvas)
-
-
+        if not self.game_over:
+            self.pause_btn = draw_button(canvas, self.pause_btn_img, 30, 20, 50, 50)
+            #canvas.draw_image(finish_line, (finish_line.get_width()/2, finish_line.get_height()/2), 
+                                  #(finish_line.get_width(), finish_line.get_height()), (500, 500), 
+                                  #(finish_line.get_width(), finish_line.get_height()))
+             
+ 
+        for platform in self.platforms:
+            platform.draw(canvas)
+        for trap in self.traps:
+            trap.draw(canvas)
+        for coin in self.coins:
+            coin.draw(canvas)
         
         # Draw coin count
-        canvas.draw_text("Coins collected: " + str(self.coin_count) + "/" + str(self.initial_coins_len), (350, 40), 20, "White", "monospace") 
+        canvas.draw_text("Coins collected: " + str(self.coin_count) + "/" + str(self.initial_coins_len), (350, 40), 20, "Black", "monospace") 
         if self.coin_count != self.initial_coins_len:
-            canvas.draw_text("Collect all coins to finish level", (270, 20), 20, "White", "monospace")
+            canvas.draw_text("Collect all coins to finish level", (270, 20), 20, "Black", "monospace")
         else:
-            canvas.draw_text("All coins collected, reach finish line", (255, 20), 20, "White", "monospace")
+            canvas.draw_text("All coins collected, reach finish line", (255, 20), 20, "Black", "monospace")
     
     
         # Draw "Game Over" text if game over
         if self.game_over:
+            self.exit_btn = draw_button(canvas, self.exit_btn_img, 420, 530, 500/4, 200/4)
             canvas.draw_text("Game Over", (260, 230), 80, "Red", "monospace")
             canvas.draw_text("LOL!!!", (50, 50), 50, "Red", "monospace")
             canvas.draw_image(troll_face, (troll_face.get_width()/2, troll_face.get_height()/2), 
@@ -331,84 +301,62 @@ class Interaction:
         if self.pause_btn.is_clicked(pos):
             frame.set_draw_handler(drawTWO)
         elif self.exit_btn.is_clicked(pos):
+            self.reset = True
             import levels
             frame.set_draw_handler(levels.draw)
             frame.set_mouseclick_handler(lambda pos: levels.click(pos, frame))
+        elif self.play_btn.is_clicked(pos):
+            frame.set_draw_handler(draw)
 
-    def switch_screen(self):
-        if self.current_screen == 1:
-            self.current_screen = 2
-        elif self.current_screen == 2:
-            self.current_screen = 1
 
-            
-
-platformsONE = [
-    Platform((2, 563), 250, 35),
-    Platform((350, 470), 50, 20),
-    Platform((495, 563), 200, 35),
-    Platform((220, 380), 50, 50),
-    Platform((0, 295), 170, 35),
-    Platform((320, 295), 170, 35),
-    Platform((120, 210), 50, 40),
-    Platform((200, 130), 170, 35),
-    Platform((760, 295), 20, 20),
-    Platform((500, 70), 170, 35),
-    Platform((675, 1), 35, 104),
-    Platform((500, -37), 170, 35),
-    Platform((55, 55), 20, 20),
+platforms = [
+    Platform((10, 578), 100, 20),
+    Platform((115, 533), 50, 65),
+    Platform((230, 440), 100, 20), 
+    Platform((420, 398), 50, 200), 
+    Platform((760, 578), 120, 20), 
+    Platform((865,500), 30, 60),
+    Platform((790,420), 40, 40),
+    Platform((850,340), 40, 40), 
+    Platform((790,260), 40, 40), 
+    Platform((515, 270), 30, 20),
+    Platform((170, 270), 150, 20),
+    Platform((50, 185), 60, 20),
+    Platform((120, 100), 60, 20),
+    Platform((300, 60), 60, 20),
+    Platform((450, 60), 445, 20),
+    Platform((0, -22), CANVAS_WIDTH, 20), # canvas ceiling using a platform
+    Platform((900,0), 20, CANVAS_HEIGHT), # canvas edge using a platform
 ]
 
-platformsTWO = [
-    Platform((165, 350), 130, 30),
-    Platform((405, 420), 40, 40),
-    Platform((790, 548), 20, 50),
-    Platform((850, 508), 50, 20),
-    Platform((790, 418), 50, 20),
-    Platform((380, 260), 130, 30),
-    Platform((850, 350), 50, 20),
-    Platform((770, 270), 70, 20),
-    Platform((270, 168), 130, 30),
-    Platform((30, 90), 200, 30),
-    Platform((7, 1), 20, 120),
-    Platform((30, -32), 200, 30),
-    Platform((560, 90), 315, 30),
-    Platform((878, 1), 20, 120),
-    Platform((560, -32), 315, 30),
-    Platform((900, 1), 20, CANVAS_HEIGHT),
-]
 
-block_pos = Vector(platformsONE[0].width / 2, 500)
+block_pos = Vector(platforms[0].width / 2, 500)
 
 player = Player(block_pos)
 
-trapsONE = [
-    Trap(12, (276, 600), 39, 40),  # Creates a Trap with 6 spikes in a row
-    Trap(10, (723, 600), 39, 40),  # Creates a Trap with 6 spikes in a row
-    Trap(2, (550, 68), 30, 15),
+traps = [
+    Trap(13, (187, 600), 38, 40),
+    Trap(1, (310, 438), 38, 30),
+    Trap(13, (497, 600), 38, 40),
+    Trap(1, (840, 576), 36.5, 38),  
+    Trap(1, (260, 268), 38, 25),
+    Trap(1, (600, 58), 38, 15),
 ]
 
-trapsTWO = [
-    Trap(40, (2, 600), 40, 40),  # Creates a Trap with 6 spikes in a row
-    Trap(11, (30, 120), 30, 31),  # Creates a Trap with 6 spikes in a row
+
+coins = [
+    Coin((139,505), 20, 3),
+    Coin((254,415), 20, 3),
+    Coin((780,553), 20, 3),
+    Coin((204,245), 20, 3),
+    Coin((154,75), 20, 3),
+    Coin((504,35), 20, 3),
+    Coin((704,35), 20, 3),
 ]
 
-coinsONE = [
-    Coin((64,33), 20, 3),
-    Coin((364,273), 20, 3),
-    Coin((770,273), 20, 3),
-    Coin((650,45), 20, 3),
-    Coin((660,540), 20, 3),
-]
 
-coinsTWO = [
-    Coin((265,320), 20, 3),
-    Coin((428,395), 20, 3),
-    Coin((810,245), 20, 3),
-    Coin((850,574), 20, 3),
-]
+i = Interaction(platforms, player, traps, coins)
 
-i = Interaction(platformsONE, platformsTWO, player, trapsONE, trapsTWO, coinsONE, coinsTWO)
 
 # Define key handlers
 def keydown(key):
@@ -419,13 +367,13 @@ def keydown(key):
     elif key == simplegui.KEY_MAP["d"] or key == simplegui.KEY_MAP["right"]:
         player.start_move_right()
 
+        
 
 def keyup(key):
     if key == simplegui.KEY_MAP["a"] or key == simplegui.KEY_MAP["left"]:
         player.stop_move_left()
     elif key == simplegui.KEY_MAP["d"] or key == simplegui.KEY_MAP["right"]:
         player.stop_move_right()
-
 
 def click(pos, frame):
     i.handle_mouse_click(pos, frame, i.draw, i.drawTWO) 

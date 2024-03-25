@@ -1,4 +1,6 @@
 from imagesANDbuttons import draw_button
+from copy import deepcopy
+
 
 exit_btn_img = 'https://i.ibb.co/r29NXsx/exit-btn.jpg'
 lvl1_btn_img = 'https://i.ibb.co/w6mffKs/lvl1-btn.jpg'
@@ -18,6 +20,7 @@ def draw(canvas):
     lvl4_btn = draw_button(canvas, lvl4_btn_img, 500, 450, 250, 100)
 
 
+
 def click(pos, frame):
     global exit_btn
     if exit_btn.is_clicked(pos):
@@ -27,22 +30,22 @@ def click(pos, frame):
         frame.set_mouseclick_handler(lambda pos: menu.click(pos, frame))  # Pass frame to click function
     elif lvl1_btn.is_clicked(pos):
         import level1
-        frame.set_draw_handler(level1.draw)
+        frame.set_draw_handler(level1.i.draw)
         frame.set_keydown_handler(level1.keydown)
         frame.set_keyup_handler(level1.keyup)
         frame.set_mouseclick_handler(lambda pos: level1.click(pos, frame))
     elif lvl2_btn.is_clicked(pos):
         import level2
-        frame.set_draw_handler(level2.draw)
+        frame.set_draw_handler(level2.i.draw)
         frame.set_keydown_handler(level2.keydown)
         frame.set_keyup_handler(level2.keyup)
         frame.set_mouseclick_handler(lambda pos: level2.click(pos, frame))
     elif lvl3_btn.is_clicked(pos):
-        import level_fixer_2
-        frame.set_draw_handler(level_fixer_2.i.draw)
-        frame.set_keydown_handler(level_fixer_2.keydown)
-        frame.set_keyup_handler(level_fixer_2.keyup)
-        #frame.set_mouseclick_handler(lambda pos: level_fixer_2.click(pos, frame))
+        import level3
+        frame.set_draw_handler(level3.i.draw)
+        frame.set_keydown_handler(level3.keydown)
+        frame.set_keyup_handler(level3.keyup)
+        frame.set_mouseclick_handler(lambda pos: level3.click(pos, frame))
     elif lvl4_btn.is_clicked(pos):
         import level4
         frame.set_draw_handler(level4.draw)

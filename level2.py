@@ -2,185 +2,379 @@ try:
     import simplegui
 except ImportError:
     import SimpleGUICS2Pygame.simpleguics2pygame as simplegui
-
-from imagesANDbuttons import draw_button, draw_image
 from vector import Vector
+from imagesANDbuttons import draw_button, draw_image
 
-canvas_width = 900
-canvas_height = 600
-block_size = 50
-jump_strength = 15
-gravity = 0.5
-is_jumping = False
-move_speed = 5
-is_moving_left = False
-is_moving_right = False
-
-platforms = [
-    {"pos": (70, 588), "width": 130, "height": 30},
-    {"pos": (165, 550), "width": 80, "height": 100},
-    {"pos": (320, 440), "width": 150, "height": 30},
-    {"pos": (520, 550), "width": 80, "height": 200},
-    {"pos": (670, 380), "width": 150, "height": 30},
-    {"pos": (840, 550), "width": 80, "height": 450},
-    {"pos": (670, 200), "width": 150, "height": 30},
-    {"pos": (455, 200), "width": 80, "height": 100},
-    {"pos": (140, 150), "width": 260, "height": 30},
-]
-
-block_pos = Vector(70, 588 - platforms[0]["height"] / 2 - block_size / 2)
-
-exit_btn_img = 'https://i.ibb.co/r29NXsx/exit-btn.jpg'
-play_btn_img = 'https://i.ibb.co/KFG5ms3/play-btn.jpg'  
-lvl2_bg_img = 'https://i.ibb.co/gjTgc9B/lvl2-bg.jpg'
-reset_btn_img = 'https://i.ibb.co/p08zvqP/reset-btn.jpg'
-pause_btn_img = 'https://i.ibb.co/LkHqxxz/pause-btn.jpg'
-paused_screen_img = 'https://i.ibb.co/ZdXM7LN/paused-screen.png'
+# Constants
+CANVAS_WIDTH = 900
+CANVAS_HEIGHT = 600
+PLAYER_SIZE = 30
+GRAVITY = Vector(0, 0.25)
+FLOOR_Y = CANVAS_HEIGHT - PLAYER_SIZE / 2  # Y-coordinate of the floor
 
 
-def draw(canvas):
-    global reset_btn, pause_btn, block_pos
-    lvl2_bg = draw_image(canvas, lvl2_bg_img, 450, 300, 900, 600)
-    reset_btn = draw_button(canvas, reset_btn_img, 830, 20, 50, 50)
-    pause_btn = draw_button(canvas, pause_btn_img, 760, 20, 50, 50)
-    canvas.draw_polygon([(block_pos.x - block_size / 2, block_pos.y - block_size / 2),
-                         (block_pos.x + block_size / 2, block_pos.y - block_size / 2),
-                         (block_pos.x + block_size / 2, block_pos.y + block_size / 2),
-                         (block_pos.x - block_size / 2, block_pos.y + block_size / 2)],
-                        1, 'Red', 'Red')
-    
-    for platform in platforms:
-        x, y = platform["pos"]
-        width = platform["width"]
-        height = platform["height"]
-        canvas.draw_polygon([(x - width / 2, y - height / 2),
-                             (x + width / 2, y - height / 2),
-                             (x + width / 2, y + height / 2),
-                             (x - width / 2, y + height / 2)],
+troll_face = simplegui.load_image('https://i.ibb.co/q0nG6Qd/troll-face.png')
+game_over_sound = simplegui.load_sound('https://audio.jukehost.co.uk/4rXY9bKqh9LnxFndLGst7Xs9U9YpKr9b')
+#troll_laugh = simplegui.load_sound('https://audio.jukehost.co.uk/AbmCCtjkcbKmoolGFCixHvlik4zfDVES')
+game_over_sound.set_volume(0.2)
+coin_sound = simplegui.load_sound('https://audio.jukehost.co.uk/UeryrWle3hDSLEgIqrA2zyNG0mNqX15F')
+jump_sound = simplegui.load_sound('https://audio.jukehost.co.uk/849X7g5DQKqnC6dGOuU1asWeUx4D1GUy')
+
+arrow = simplegui.load_image('https://cdn1.iconfinder.com/data/icons/pixel-game/110/pixel-39-512.png')
+
+finish_line = simplegui.load_image('https://i.ibb.co/0Bwn2vJ/finish-line.png')
+
+
+class Platform:
+    def __init__(self, position, width, height):
+        self.x, self.y = position
+        self.width = width
+        self.height = height
+        self.edge_l = self.x  # Left edge of the platform
+        self.edge_r = self.x + self.width  # Right edge of the platform
+        self.edge_b = self.y + self.height  # Bottom edge of the platform
+        self.edge_t = self.y  # Top edge of the platform
+
+    def draw(self, canvas):
+        canvas.draw_polygon([(self.x, self.y),
+                             (self.x + self.width, self.y),
+                             (self.x + self.width, self.y + self.height),
+                             (self.x, self.y + self.height)],
                             3, '#92620F', '#C49139')
 
-def draw_pause(canvas):
-    global play_btn, exit_btn, reset_btn, pause_btn, block_pos, paused_screen
-    paused_screen = draw_image(canvas, paused_screen_img, 450, 300, 900, 600)
-    play_btn = draw_button(canvas, play_btn_img, 500, 450, 250, 100)
-    exit_btn = draw_button(canvas, exit_btn_img, 150, 450, 250, 100)
+    def hit(self, player):
+        return player.offset_l() <= self.edge_r and player.offset_r() >= self.edge_l \
+            and player.offset_t() <= self.edge_b and player.offset_b() >= self.edge_t
+
+    
+
+class Trap:
+    def __init__(self, spikes_quantity, position, width, height):
+        self.spikes = []
+        self.width = width
+        self.height = height
+        self.edge_l = position[0] - width / 2  # Left edge of the trap
+        self.edge_r = position[0] + (width / 2 * spikes_quantity)  # Right edge of the trap
+        self.edge_b = position[1]  # Bottom edge of the trap
+        self.edge_t = position[1] - height  # Top edge of the trap
+        
+        # Calculate spike positions
+        for i in range(spikes_quantity):
+            spike_x = position[0] - width / 2 + i * width / 2
+            spike_y = position[1]
+            spike = [(spike_x, spike_y), (spike_x + width / 2, spike_y), (spike_x + width / 4, spike_y - height)]
+            self.spikes.append(spike)
+
+    def draw(self, canvas):
+        for spike in self.spikes:
+            canvas.draw_polygon(spike, 3, "#5F5F5F", "#A5A2A2")
+
+    def hit(self, player):
+        return player.offset_l() <= self.edge_r and player.offset_r() >= self.edge_l \
+            and player.offset_t() <= self.edge_b and player.offset_b() >= self.edge_t
+        
+    
+      
+class Coin:
+    def __init__(self, position, radius, border):
+        self.x, self.y = position
+        self.radius = radius
+        self.border = border
+
+    def draw(self, canvas):
+        canvas.draw_circle([self.x, self.y], self.radius, self.border, 'Yellow', 'Orange')
+
+        
+        
+class Player:
+    def __init__(self, pos):
+        self.pos = pos
+        self.width = PLAYER_SIZE
+        self.height = PLAYER_SIZE
+        self.vel = Vector(0, 0)
+        self.on_ground = True
+        self.moving_left = False
+        self.moving_right = False
+        self.can_move = True
 
 
+    def draw(self, canvas):
+        canvas.draw_polygon([(self.pos.x - PLAYER_SIZE / 2, self.pos.y - PLAYER_SIZE / 2),
+                             (self.pos.x + PLAYER_SIZE / 2, self.pos.y - PLAYER_SIZE / 2),
+                             (self.pos.x + PLAYER_SIZE / 2, self.pos.y + PLAYER_SIZE / 2),
+                             (self.pos.x - PLAYER_SIZE / 2, self.pos.y + PLAYER_SIZE / 2)],
+                            1, "Red", "Red")
+        
 
-def keydown(key):
-    global is_jumping, is_moving_left, is_moving_right
-    if key == simplegui.KEY_MAP['left']:
-        is_moving_left = True
-    elif key == simplegui.KEY_MAP['a']:
-        is_moving_left = True
-    elif key == simplegui.KEY_MAP['right']:
-        is_moving_right = True
-    elif key == simplegui.KEY_MAP['d']:
-        is_moving_right = True
-    elif key == simplegui.KEY_MAP['up'] and not is_jumping:
-        is_jumping = True
-    elif key == simplegui.KEY_MAP['w'] and not is_jumping:
-        is_jumping = True
+    def update(self, platforms, traps, coins):
+        self.vel += GRAVITY
+        # Adjust velocity based on movement direction
+        if self.moving_left:
+            self.vel.x = -5
+        elif self.moving_right:
+            self.vel.x = 5
+        else:
+            self.vel.x = 0
+            
+        self.pos += self.vel
+        
+        # Check if player hits the floor
+        if self.pos.y >= FLOOR_Y:
+            self.pos.y = FLOOR_Y
+            self.vel.y = 0
+            self.on_ground = True
+        else:
+            self.on_ground = False
+          
+        
+        # Ensure player stays within canvas bounds
+        # Check if player hits the right edge of the screen
+        if self.pos.x > CANVAS_WIDTH:
+            self.pos.x = CANVAS_WIDTH 
+        # Check if player hits the left edge of the screen
+        if self.pos.x < PLAYER_SIZE / 2:
+            self.pos.x = PLAYER_SIZE / 2
 
 
-def keyup(key):
-    global is_moving_left, is_moving_right
-    if key == simplegui.KEY_MAP['left']:
-        is_moving_left = False
-    if key == simplegui.KEY_MAP['a']:
-        is_moving_left = False
-    elif key == simplegui.KEY_MAP['right']:
-        is_moving_right = False
-    elif key == simplegui.KEY_MAP['d']:
-        is_moving_right = False
-
-
-def update():
-    global block_pos, is_jumping, jump_strength, gravity
-
-    # Movement controls
-    if is_moving_left and block_pos.x - block_size / 2 > 0:
-        block_pos.x -= move_speed
-
-    if is_moving_right and block_pos.x + block_size / 2 < canvas_width:
-        block_pos.x += move_speed
-
-    # Jumping mechanics
-    if is_jumping:
-        block_pos.y -= jump_strength
-        jump_strength -= gravity
-
-        # Check if block hits the ground
-        if block_pos.y >= canvas_height - block_size / 2:
-            is_jumping = False
-            jump_strength = 12
-
-        # Check if block collides with any platform
+        # Check for collisions with platforms
         for platform in platforms:
-            x, y = platform["pos"]
-            width = platform["width"]
-            height = platform["height"]
-            if (x - width / 2 <= block_pos.x <= x + width / 2 and
-                y - height / 2 <= block_pos.y + block_size / 2 <= y + height / 2):
-                is_jumping = False
-                jump_strength = 15
-                block_pos.y = y - height / 2 - block_size / 2
+            # Collision with left side of the platform
+            if self.vel.x > 0 and self.pos.x + self.width / 2 >= platform.edge_l and \
+                self.pos.x - self.width / 2 < platform.edge_l and \
+                self.pos.y + self.height / 2 > platform.y and \
+                self.pos.y - self.height / 2 < platform.y + platform.height:
+                self.pos.x = platform.edge_l - self.width / 2
+            # Collision with right side of the platform
+            elif self.vel.x < 0 and self.pos.x - self.width / 2 <= platform.edge_r and \
+                    self.pos.x + self.width / 2 > platform.edge_r and \
+                    self.pos.y + self.height / 2 > platform.y and \
+                    self.pos.y - self.height / 2 < platform.y + platform.height:
+                self.pos.x = platform.edge_r + self.width / 2
+            # Collision with bottom of the platform
+            if self.pos.y - self.height / 2 < platform.edge_b and \
+                self.pos.y + self.vel.y - self.height / 2 > platform.y and \
+                self.pos.x + self.width / 2 > platform.edge_l and \
+                self.pos.x - self.width / 2 < platform.edge_r:
+                    # Collision with bottom of the platform
+                    self.pos.y = platform.edge_b + self.height / 2  # Move player to just above the platform's bottom edge
+                    self.vel.y = 0  # Stop vertical movement
+                    self.on_ground = True  # Set player on ground after collision
+            # Collision with top of the platform
+            elif self.vel.y > 0 and self.pos.y - self.height / 2 <= platform.edge_t and \
+                    self.pos.y + self.height / 2 > platform.edge_t and \
+                    self.pos.x + self.width / 2 > platform.edge_l and \
+                    self.pos.x - self.width / 2 < platform.edge_r:
+                self.pos.y = platform.edge_t - self.height / 2
+                self.vel.y = 0
+                self.on_ground = True
+                # Additional condition to prevent interference with left/right edge collision
+                if (self.pos.x + self.width / 2 > platform.edge_l and \
+                    self.pos.x - self.width / 2 < platform.edge_r):
+                    self.on_ground = True
+
+        
+        # Check for collisions with traps
+        for trap in traps:
+            # Collision with top of the trap
+            if self.pos.y - self.height / 2 <= trap.edge_t and \
+                    self.pos.y + self.height / 2 > trap.edge_t and \
+                    self.pos.x + self.width / 2 > trap.edge_l and \
+                    self.pos.x - self.width / 2 < trap.edge_r:
+                self.pos.y = trap.edge_t - self.height / 2
+                self.vel.y = 0
+                self.on_ground = False
+                self.can_move = False
+                self.moving_left = False  # Stop horizontal movement
+                self.moving_right = False  # Stop horizontal movement
+                break
+        else:  # No collision with trap's top edge
+            self.can_move = True
+
+        # Check for collisions with coins
+        for coin in coins:
+            distance = (self.pos.x - coin.x) ** 2 + (self.pos.y - coin.y) ** 2
+            if distance <= (coin.radius + self.width / 2) ** 2:
+                coins.remove(coin)
+                coin_sound.play()
                 break
 
-    # Check collision with platform sides and bottom
-    on_platform = False
-    for platform in platforms:
-        x, y = platform["pos"]
-        width = platform["width"]
-        height = platform["height"]
-        if (x - width / 2 <= block_pos.x + block_size / 2 <= x + width / 2 or
-            x - width / 2 <= block_pos.x - block_size / 2 <= x + width / 2) and \
-                y - height / 2 <= block_pos.y + block_size / 2 <= y + height / 2:
-            if block_pos.y + block_size / 2 < y - height / 2 + 2:  # Check if block is above the top edge of platform
-                on_platform = True
-            elif block_pos.y - block_size / 2 > y + height / 2 - 2:  # Check if block hits the bottom edge of platform
-                block_pos.y = y + height / 2 + block_size / 2
-            elif block_pos.x + block_size / 2 > x + width / 2:  # If block hits right side of platform
-                block_pos.x = x + width / 2 + block_size / 2
-            elif block_pos.x - block_size / 2 < x - width / 2:  # If block hits left side of platform
-                block_pos.x = x - width / 2 - block_size / 2
-
-    # If not on platform and not jumping, apply gravity
-    if not on_platform and not is_jumping:
-        block_pos.y += gravity
-
-    # Boundaries checking (similar to canvas edges)
-    if block_pos.y + block_size / 2 > canvas_height:
-        block_pos.y = canvas_height - block_size / 2
 
 
-def is_on_platform():
-    for platform in platforms:
-        x, y = platform["pos"]
-        width = platform["width"]
-        height = platform["height"]
-        if (x - width / 2 <= block_pos.x <= x + width / 2 and
-            y - height / 2 <= block_pos.y + block_size / 2 <= y + height / 2):
-            return True
-    return False
+    def jump(self):
+        if self.on_ground:
+            jump_sound.play()
+            self.vel.y = -7  # Adjust jump strength as needed
 
+    def start_move_left(self):
+        if self.can_move:  # Check if the player is allowed to move
+            self.moving_left = True
+
+    def stop_move_left(self):
+        self.moving_left = False
+
+    def start_move_right(self):
+        if self.can_move:  # Check if the player is allowed to move
+            self.moving_right = True
+
+    def stop_move_right(self):
+        self.moving_right = False
+
+               
+
+class Interaction:
+    def __init__(self, platforms, player, traps, coins):
+        self.player = player
+        self.platforms = platforms
+        self.traps = traps
+        self.coins = coins
+        self.game_over = False  # Flag to track if game over
+        self.lives_count = 3  # Flag to track if game over
+        self.coin_count = 0  # Counter for collected coins
+        self.initial_coins_len = len(self.coins)
+        
+        # Buttons
+        self.pause_btn_img = 'https://i.ibb.co/LkHqxxz/pause-btn.jpg'
+        self.paused_screen_img = 'https://i.ibb.co/ZdXM7LN/paused-screen.png'
+        self.play_btn_img = 'https://i.ibb.co/KFG5ms3/play-btn.jpg' 
+        self.exit_btn_img = 'https://i.ibb.co/r29NXsx/exit-btn.jpg'
+        self.reset_btn_img = 'https://i.ibb.co/p08zvqP/reset-btn.jpg'
+
+        # Images
+        self.lvl2_bg = 'https://i.ibb.co/gjTgc9B/lvl2-bg.jpg'
+
+
+    def update(self):
+        self.player.update(self.platforms, self.traps, self.coins)
+        
+        # Check for game over condition
+        if not self.player.can_move:
+            self.game_over = True
+
+        
+        # Update coin count
+        self.coin_count = self.initial_coins_len - len(self.coins)
+
+        
+    def draw(self, canvas):
+        draw_image(canvas, self.lvl2_bg, 450, 300, 900, 600)
+        self.update()
+        self.player.draw(canvas)
+        if not self.game_over:
+            self.pause_btn = draw_button(canvas, self.pause_btn_img, 30, 20, 50, 50)
+            #canvas.draw_image(finish_line, (finish_line.get_width()/2, finish_line.get_height()/2), 
+                                  #(finish_line.get_width(), finish_line.get_height()), (500, 500), 
+                                  #(finish_line.get_width(), finish_line.get_height()))
+             
+ 
+        for platform in self.platforms:
+            platform.draw(canvas)
+        for trap in self.traps:
+            trap.draw(canvas)
+        for coin in self.coins:
+            coin.draw(canvas)
+        
+        # Draw coin count
+        canvas.draw_text("Coins collected: " + str(self.coin_count) + "/" + str(self.initial_coins_len), (350, 40), 20, "Black", "monospace") 
+        if self.coin_count != self.initial_coins_len:
+            canvas.draw_text("Collect all coins to finish level", (270, 20), 20, "Black", "monospace")
+        else:
+            canvas.draw_text("All coins collected, reach finish line", (255, 20), 20, "Black", "monospace")
+    
+    
+        # Draw "Game Over" text if game over
+        if self.game_over:
+            self.exit_btn = draw_button(canvas, self.exit_btn_img, 420, 530, 500/4, 200/4)
+            canvas.draw_text("Game Over", (260, 230), 80, "Red", "monospace")
+            canvas.draw_text("LOL!!!", (50, 50), 50, "Red", "monospace")
+            canvas.draw_image(troll_face, (troll_face.get_width()/2, troll_face.get_height()/2), 
+                              (troll_face.get_width(), troll_face.get_height()), (460, 360), 
+                              (troll_face.get_width()/3, troll_face.get_height()/3))
+            #game_over_sound.play()
+
+    def drawTWO(self, canvas):
+        self.paused_screen = draw_image(canvas, self.paused_screen_img, 450, 300, 900, 600)
+        self.play_btn = draw_button(canvas, self.play_btn_img, 500, 450, 250, 100)
+        self.exit_btn = draw_button(canvas, self.exit_btn_img, 150, 450, 250, 100)
+
+
+    def handle_mouse_click(self, pos, frame, draw, drawTWO):
+        if self.pause_btn.is_clicked(pos):
+            frame.set_draw_handler(drawTWO)
+        elif self.exit_btn.is_clicked(pos):
+            self.reset = True
+            import levels
+            frame.set_draw_handler(levels.draw)
+            frame.set_mouseclick_handler(lambda pos: levels.click(pos, frame))
+        elif self.play_btn.is_clicked(pos):
+            frame.set_draw_handler(draw)
+
+
+platforms = [
+    Platform((10, 578), 100, 20),
+    Platform((115, 533), 50, 65),
+    Platform((230, 440), 100, 20), 
+    Platform((420, 398), 50, 200), 
+    Platform((760, 578), 120, 20), 
+    Platform((865,500), 30, 60),
+    Platform((790,420), 40, 40),
+    Platform((850,340), 40, 40), 
+    Platform((790,260), 40, 40), 
+    Platform((515, 270), 30, 20),
+    Platform((170, 270), 150, 20),
+    Platform((50, 185), 60, 20),
+    Platform((120, 100), 60, 20),
+    Platform((300, 60), 60, 20),
+    Platform((450, 60), 445, 20),
+    Platform((0, -22), CANVAS_WIDTH, 20), # canvas ceiling using a platform
+    Platform((900,0), 20, CANVAS_HEIGHT), # canvas edge using a platform
+]
+
+
+block_pos = Vector(platforms[0].width / 2, 500)
+
+player = Player(block_pos)
+
+traps = [
+    Trap(13, (187, 600), 38, 40),
+    Trap(1, (310, 438), 38, 30),
+    Trap(13, (497, 600), 38, 40),
+    Trap(1, (840, 576), 36.5, 38),  
+    Trap(1, (260, 268), 38, 25),
+    Trap(1, (600, 58), 38, 15),
+]
+
+
+coins = [
+    Coin((139,505), 20, 3),
+    Coin((254,415), 20, 3),
+    Coin((780,553), 20, 3),
+    Coin((204,245), 20, 3),
+    Coin((154,75), 20, 3),
+    Coin((504,35), 20, 3),
+    Coin((704,35), 20, 3),
+]
+
+
+i = Interaction(platforms, player, traps, coins)
+
+
+# Define key handlers
+def keydown(key):
+    if key == simplegui.KEY_MAP["w"] or key == simplegui.KEY_MAP["up"]:
+        player.jump()
+    elif key == simplegui.KEY_MAP["a"] or key == simplegui.KEY_MAP["left"]:
+        player.start_move_left()
+    elif key == simplegui.KEY_MAP["d"] or key == simplegui.KEY_MAP["right"]:
+        player.start_move_right()
+
+        
+
+def keyup(key):
+    if key == simplegui.KEY_MAP["a"] or key == simplegui.KEY_MAP["left"]:
+        player.stop_move_left()
+    elif key == simplegui.KEY_MAP["d"] or key == simplegui.KEY_MAP["right"]:
+        player.stop_move_right()
 
 def click(pos, frame):
-    global play_btn, exit_btn, reset_btn, pause_btn, timer, block_pos
-    if pause_btn.is_clicked(pos):
-        frame.set_draw_handler(draw_pause)
-    elif reset_btn.is_clicked(pos):
-        block_pos = Vector(70, 588 - platforms[0]["height"] / 2 - block_size / 2)
-    elif exit_btn.is_clicked(pos):
-        timer.stop()
-        import levels
-        frame.set_draw_handler(levels.draw)
-        frame.set_mouseclick_handler(lambda pos: levels.click(pos, frame))
-    elif play_btn.is_clicked(pos):
-        frame.set_draw_handler(draw)
+    i.handle_mouse_click(pos, frame, i.draw, i.drawTWO) 
 
-
-timer = simplegui.create_timer(1000 // 60, update)
-timer.start()
-
-           

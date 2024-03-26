@@ -96,6 +96,7 @@ class Player:
         self.moving_left = False
         self.moving_right = False
         self.can_move = True
+        self.level_complete = False
 
 
     def draw(self, canvas):
@@ -106,7 +107,7 @@ class Player:
                             1, "Red", "Red")
         
 
-    def update(self, platforms, traps, coins):
+    def update(self, platforms, traps, coins, finish_line):
         self.vel += GRAVITY
         # Adjust velocity based on movement direction
         if self.moving_left:
@@ -197,6 +198,51 @@ class Player:
                 coins.remove(coin)
                 coin_sound.play()
                 break
+        
+        # Check for collisions with finish line
+        finish_line_left = 830
+        finish_line_right = 830 + finish_line.get_width() / 3
+        finish_line_top = 35
+        finish_line_bottom = 35 + finish_line.get_height() / 3
+
+        # Collision with left edge of finish line
+        if self.pos.x - self.width / 2 <= finish_line_right and \
+                self.pos.x + self.width / 2 >= finish_line_left and \
+                self.pos.y + self.height / 2 >= finish_line_top and \
+                self.pos.y - self.height / 2 <= finish_line_bottom:
+            # Handle collision with left edge
+            self.level_complete = True
+            self.on_ground = False
+            self.can_move = False
+            self.moving_left = False  # Stop horizontal movement
+            self.moving_right = False  # Stop horizontal movement
+            return
+
+        # Collision with right edge of finish line
+        if self.pos.x + self.width / 2 >= finish_line_left and \
+                self.pos.x - self.width / 2 <= finish_line_right and \
+                self.pos.y + self.height / 2 >= finish_line_top and \
+                self.pos.y - self.height / 2 <= finish_line_bottom:
+            # Handle collision with right edge
+            self.level_complete = True
+            self.on_ground = False
+            self.can_move = False
+            self.moving_left = False  # Stop horizontal movement
+            self.moving_right = False  # Stop horizontal movement
+            return
+
+        # Collision with top edge of finish line
+        if self.pos.y - self.height / 2 <= finish_line_bottom and \
+                self.pos.y + self.height / 2 >= finish_line_top and \
+                self.pos.x + self.width / 2 >= finish_line_left and \
+                self.pos.x - self.width / 2 <= finish_line_right:
+            # Handle collision with top edge
+            self.level_complete = True
+            self.on_ground = False
+            self.can_move = False
+            self.moving_left = False  # Stop horizontal movement
+            self.moving_right = False  # Stop horizontal movement
+            return
 
 
 
@@ -238,16 +284,27 @@ class Interaction:
         self.play_btn_img = 'https://i.ibb.co/KFG5ms3/play-btn.jpg' 
         self.exit_btn_img = 'https://i.ibb.co/r29NXsx/exit-btn.jpg'
         self.reset_btn_img = 'https://i.ibb.co/p08zvqP/reset-btn.jpg'
+        self.next_lvl_btn_img = 'https://i.ibb.co/5cyXJTm/next-lvl-btn.jpg'
+
+        self.pause_btn = None
+        self.paused_screen = None
+        self.play_btn = None 
+        self.exit_btn = None
+        self.reset_btn = None
+        self.next_lvl_btn = None
 
         # Images
         self.lvl2_bg = 'https://i.ibb.co/gjTgc9B/lvl2-bg.jpg'
+        self.finish_line = simplegui.load_image('https://i.ibb.co/7vHknZT/finish-line.png')
+        self.level_complete_img = simplegui.load_image('https://i.ibb.co/X37pXc9/level-complete.png')
+        self.game_over_img = simplegui.load_image('https://i.ibb.co/tK8VgNP/game-over.png')
 
 
     def update(self):
-        self.player.update(self.platforms, self.traps, self.coins)
+        self.player.update(self.platforms, self.traps, self.coins, self.finish_line)
         
         # Check for game over condition
-        if not self.player.can_move:
+        if not self.player.can_move and player.level_complete == False:
             self.game_over = True
 
         
@@ -258,14 +315,15 @@ class Interaction:
     def draw(self, canvas):
         draw_image(canvas, self.lvl2_bg, 450, 300, 900, 600)
         self.update()
-        self.player.draw(canvas)
         if not self.game_over:
             self.pause_btn = draw_button(canvas, self.pause_btn_img, 30, 20, 50, 50)
-            #canvas.draw_image(finish_line, (finish_line.get_width()/2, finish_line.get_height()/2), 
-                                  #(finish_line.get_width(), finish_line.get_height()), (500, 500), 
-                                  #(finish_line.get_width(), finish_line.get_height()))
+            if self.coin_count == self.initial_coins_len:
+                canvas.draw_image(self.finish_line, (self.finish_line.get_width()/2, self.finish_line.get_height()/2), 
+                                  (self.finish_line.get_width(), self.finish_line.get_height()), (830, 35), 
+                                  (self.finish_line.get_width()/5, self.finish_line.get_height()/5))
+        
+        self.player.draw(canvas)
              
- 
         for platform in self.platforms:
             platform.draw(canvas)
         for trap in self.traps:
@@ -283,13 +341,20 @@ class Interaction:
     
         # Draw "Game Over" text if game over
         if self.game_over:
-            self.exit_btn = draw_button(canvas, self.exit_btn_img, 420, 530, 500/4, 200/4)
-            canvas.draw_text("Game Over", (260, 230), 80, "Red", "monospace")
+            self.exit_btn = draw_button(canvas, self.exit_btn_img, 320, 420, 500/2, 200/2)
+            canvas.draw_image(self.game_over_img, (self.game_over_img.get_width()/2, self.game_over_img.get_height()/2), 
+                              (self.game_over_img.get_width(), self.game_over_img.get_height()), (450, 200), 
+                              (self.game_over_img.get_width(), self.game_over_img.get_height()))
             canvas.draw_text("LOL!!!", (50, 50), 50, "Red", "monospace")
-            canvas.draw_image(troll_face, (troll_face.get_width()/2, troll_face.get_height()/2), 
-                              (troll_face.get_width(), troll_face.get_height()), (460, 360), 
-                              (troll_face.get_width()/3, troll_face.get_height()/3))
             #game_over_sound.play()
+
+        # Draw "Level Complete" text if level complete
+        if player.level_complete:
+            self.next_lvl_btn = draw_button(canvas, self.next_lvl_btn_img, 320, 420, 500/2, 200/2)
+            canvas.draw_image(self.level_complete_img, (self.level_complete_img.get_width()/2, self.level_complete_img.get_height()/2), 
+                              (self.level_complete_img.get_width(), self.level_complete_img.get_height()), (450, 260), 
+                              (self.level_complete_img.get_width(), self.level_complete_img.get_height()))
+            #canvas.draw_text("Level Complete", (260, 230), 80, "Red", "monospace")
 
     def drawTWO(self, canvas):
         self.paused_screen = draw_image(canvas, self.paused_screen_img, 450, 300, 900, 600)
@@ -300,13 +365,28 @@ class Interaction:
     def handle_mouse_click(self, pos, frame, draw, drawTWO):
         if self.pause_btn.is_clicked(pos):
             frame.set_draw_handler(drawTWO)
-        elif self.exit_btn.is_clicked(pos):
-            self.reset = True
-            import levels
-            frame.set_draw_handler(levels.draw)
-            frame.set_mouseclick_handler(lambda pos: levels.click(pos, frame))
-        elif self.play_btn.is_clicked(pos):
-            frame.set_draw_handler(draw)
+        if self.next_lvl_btn == None:
+            pass
+        else:
+            if self.next_lvl_btn.is_clicked(pos):
+                import level3
+                frame.set_draw_handler(level3.i.draw)
+                frame.set_keydown_handler(level3.keydown)
+                frame.set_keyup_handler(level3.keyup)
+                frame.set_mouseclick_handler(lambda pos: level3.click(pos, frame))
+        if self.exit_btn == None:
+            pass
+        else:
+            if self.exit_btn.is_clicked(pos):
+                #self.reset = True
+                import levels
+                frame.set_draw_handler(levels.draw)
+                frame.set_mouseclick_handler(lambda pos: levels.click(pos, frame))
+        if self.play_btn == None:
+            pass
+        else:
+            if self.play_btn.is_clicked(pos):
+                frame.set_draw_handler(draw)
 
 
 platforms = [
@@ -351,7 +431,6 @@ coins = [
     Coin((204,245), 20, 3),
     Coin((154,75), 20, 3),
     Coin((504,35), 20, 3),
-    Coin((704,35), 20, 3),
 ]
 
 

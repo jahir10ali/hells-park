@@ -99,5 +99,3 @@ def click(pos, frame):
         timer.stop()
 
 
-timer = simplegui.create_timer(1000 // 60, update)
-timer.start()

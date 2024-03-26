@@ -97,6 +97,7 @@ class Player:
         self.moving_left = False
         self.moving_right = False
         self.can_move = True
+        self.level_complete = False
 
 
     def draw(self, canvas):
@@ -107,7 +108,7 @@ class Player:
                             1, "Red", "Red")
         
 
-    def update(self, platforms, traps, coins):
+    def update(self, platforms, traps, coins, finish_line):
         self.vel += GRAVITY
         # Adjust velocity based on movement direction
         if self.moving_left:
@@ -208,6 +209,51 @@ class Player:
                 break
 
 
+        # Check for collisions with finish line
+        finish_line_left = 680
+        finish_line_right = 680 + finish_line.get_width() / 3
+        finish_line_top = 50
+        finish_line_bottom = 50 + finish_line.get_height() / 3
+
+        # Collision with left edge of finish line
+        if self.pos.x - self.width / 2 <= finish_line_right and \
+                self.pos.x + self.width / 2 >= finish_line_left and \
+                self.pos.y + self.height / 2 >= finish_line_top and \
+                self.pos.y - self.height / 2 <= finish_line_bottom:
+            # Handle collision with left edge
+            self.level_complete = True
+            self.on_ground = False
+            self.can_move = False
+            self.moving_left = False  # Stop horizontal movement
+            self.moving_right = False  # Stop horizontal movement
+            return
+
+        # Collision with right edge of finish line
+        if self.pos.x + self.width / 2 >= finish_line_left and \
+                self.pos.x - self.width / 2 <= finish_line_right and \
+                self.pos.y + self.height / 2 >= finish_line_top and \
+                self.pos.y - self.height / 2 <= finish_line_bottom:
+            # Handle collision with right edge
+            self.level_complete = True
+            self.on_ground = False
+            self.can_move = False
+            self.moving_left = False  # Stop horizontal movement
+            self.moving_right = False  # Stop horizontal movement
+            return
+
+        # Collision with top edge of finish line
+        if self.pos.y - self.height / 2 <= finish_line_bottom and \
+                self.pos.y + self.height / 2 >= finish_line_top and \
+                self.pos.x + self.width / 2 >= finish_line_left and \
+                self.pos.x - self.width / 2 <= finish_line_right:
+            # Handle collision with top edge
+            self.level_complete = True
+            self.on_ground = False
+            self.can_move = False
+            self.moving_left = False  # Stop horizontal movement
+            self.moving_right = False  # Stop horizontal movement
+            return
+
 
     def jump(self):
         if self.on_ground:
@@ -251,19 +297,32 @@ class Interaction:
         self.play_btn_img = 'https://i.ibb.co/KFG5ms3/play-btn.jpg' 
         self.exit_btn_img = 'https://i.ibb.co/r29NXsx/exit-btn.jpg'
         self.reset_btn_img = 'https://i.ibb.co/p08zvqP/reset-btn.jpg'
+        self.next_lvl_btn_img = 'https://i.ibb.co/5cyXJTm/next-lvl-btn.jpg'
+
+        self.pause_btn = None
+        self.paused_screen = None
+        self.play_btn = None 
+        self.exit_btn = None
+        self.reset_btn = None
+        self.next_lvl_btn = None
 
         # Images
         self.lvl3_bg = 'https://i.ibb.co/f80DvZw/lvl3-bg.jpg'
+        self.finish_line = simplegui.load_image('https://i.ibb.co/7vHknZT/finish-line.png')
+        self.level_complete_img = simplegui.load_image('https://i.ibb.co/X37pXc9/level-complete.png')
+        self.game_over_img = simplegui.load_image('https://i.ibb.co/tK8VgNP/game-over.png')
+        self.arrow = 'https://i.ibb.co/dpD9wZW/arrow.png'
+        self.this_way = 'https://i.ibb.co/ZdhjPNJ/this-way.png'
 
 
     def update(self):
         if self.current_screen == 1:
-            self.player.update(self.platformsONE, self.trapsONE, self.coinsONE)
+            self.player.update(self.platformsONE, self.trapsONE, self.coinsONE, self.finish_line)
         elif self.current_screen == 2:
-            self.player.update(self.platformsTWO, self.trapsTWO, self.coinsTWO)
+            self.player.update(self.platformsTWO, self.trapsTWO, self.coinsTWO, self.finish_line)
         
         # Check for game over condition
-        if not self.player.can_move:
+        if not self.player.can_move and player.level_complete == False:
             self.game_over = True
 
         # Update coin count
@@ -273,18 +332,22 @@ class Interaction:
     def draw(self, canvas):
         draw_image(canvas, self.lvl3_bg, 450, 300, 900, 600)
         self.update()
-        self.player.draw(canvas)
         if not self.game_over:
-            self.pause_btn = draw_button(canvas, self.pause_btn_img, 760, 20, 50, 50)
+            self.pause_btn = draw_button(canvas, self.pause_btn_img, 770, 20, 50, 50)
+            if not self.coin_count == self.initial_coins_len and self.current_screen == 2:
+                canvas.draw_image(self.finish_line, (self.finish_line.get_width()/2, self.finish_line.get_height()/2), 
+                                  (self.finish_line.get_width(), self.finish_line.get_height()), (680, 50), 
+                                  (self.finish_line.get_width()/4, self.finish_line.get_height()/4))
         if self.current_screen == 1 and not self.game_over:
-            canvas.draw_image(arrow, (arrow.get_width()/2, arrow.get_height()/2), 
-                                  (arrow.get_width(), arrow.get_height()), (660, 170), 
-                                  (arrow.get_width()/5, arrow.get_height()/3), 4.7)
-            canvas.draw_text("This way", (760, 180), 20, "White", "monospace")
-        if self.current_screen == 2 and not self.game_over:
-            canvas.draw_image(finish_line, (finish_line.get_width()/2, finish_line.get_height()/2), 
-                                  (finish_line.get_width(), finish_line.get_height()), (500, 500), 
-                                  (finish_line.get_width(), finish_line.get_height()))
+            draw_image(canvas, self.arrow, 690, 155, 200/1.5, 200/1.5)
+            draw_image(canvas, self.this_way, 700, 220, 500/2.5, 100/2.5)
+            #canvas.draw_image(arrow, (arrow.get_width()/2, arrow.get_height()/2), 
+                                  #(arrow.get_width(), arrow.get_height()), (660, 170), 
+                                  #(arrow.get_width()/5, arrow.get_height()/3), 4.7)
+            #canvas.draw_text("This way", (760, 180), 20, "White", "monospace")
+
+        self.player.draw(canvas)
+
         if self.current_screen == 1:
             for platform in self.platformsONE:
                 platform.draw(canvas)
@@ -314,14 +377,20 @@ class Interaction:
     
         # Draw "Game Over" text if game over
         if self.game_over:
-            self.exit_btn = draw_button(canvas, self.exit_btn_img, 420, 530, 500/4, 200/4)
-            canvas.draw_text("Game Over", (260, 230), 80, "Red", "monospace")
+            self.exit_btn = draw_button(canvas, self.exit_btn_img, 320, 420, 500/2, 200/2)
+            canvas.draw_image(self.game_over_img, (self.game_over_img.get_width()/2, self.game_over_img.get_height()/2), 
+                              (self.game_over_img.get_width(), self.game_over_img.get_height()), (450, 200), 
+                              (self.game_over_img.get_width(), self.game_over_img.get_height()))
             canvas.draw_text("LOL!!!", (50, 50), 50, "Red", "monospace")
-            canvas.draw_image(troll_face, (troll_face.get_width()/2, troll_face.get_height()/2), 
-                              (troll_face.get_width(), troll_face.get_height()), (460, 360), 
-                              (troll_face.get_width()/3, troll_face.get_height()/3))
-            
             #game_over_sound.play()
+        
+        # Draw "Level Complete" text if level complete
+        if player.level_complete:
+            self.next_lvl_btn = draw_button(canvas, self.next_lvl_btn_img, 320, 420, 500/2, 200/2)
+            canvas.draw_image(self.level_complete_img, (self.level_complete_img.get_width()/2, self.level_complete_img.get_height()/2), 
+                              (self.level_complete_img.get_width(), self.level_complete_img.get_height()), (450, 260), 
+                              (self.level_complete_img.get_width(), self.level_complete_img.get_height()))
+            #canvas.draw_text("Level Complete", (260, 230), 80, "Red", "monospace")
 
     def drawTWO(self, canvas):
         self.paused_screen = draw_image(canvas, self.paused_screen_img, 450, 300, 900, 600)
@@ -332,13 +401,28 @@ class Interaction:
     def handle_mouse_click(self, pos, frame, draw, drawTWO):
         if self.pause_btn.is_clicked(pos):
             frame.set_draw_handler(drawTWO)
-        elif self.exit_btn.is_clicked(pos):
-            self.reset = True
-            import levels
-            frame.set_draw_handler(levels.draw)
-            frame.set_mouseclick_handler(lambda pos: levels.click(pos, frame))
-        elif self.play_btn.is_clicked(pos):
-            frame.set_draw_handler(draw)
+        if self.next_lvl_btn == None:
+            pass
+        else:
+            if self.next_lvl_btn.is_clicked(pos):
+                import level4
+                frame.set_draw_handler(level4.draw)
+                frame.set_keydown_handler(level4.keydown)
+                frame.set_keyup_handler(level4.keyup)
+                frame.set_mouseclick_handler(lambda pos: level4.click(pos, frame))
+        if self.exit_btn == None:
+            pass
+        else:
+            if self.exit_btn.is_clicked(pos):
+                #self.reset = True
+                import levels
+                frame.set_draw_handler(levels.draw)
+                frame.set_mouseclick_handler(lambda pos: levels.click(pos, frame))
+        if self.play_btn == None:
+            pass
+        else:
+            if self.play_btn.is_clicked(pos):
+                frame.set_draw_handler(draw)
 
     def switch_screen(self):
         if self.current_screen == 1:

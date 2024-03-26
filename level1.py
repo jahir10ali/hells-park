@@ -364,7 +364,8 @@ class Interaction:
     
         # Draw "Game Over" text if game over
         if self.game_over:
-            self.exit_btn = draw_button(canvas, self.exit_btn_img, 320, 420, 500/2, 200/2)
+            self.exit_btn = draw_button(canvas, self.exit_btn_img, 255, 420, 500/2, 200/2)
+            self.reset_btn = draw_button(canvas, self.reset_btn_img, 555, 420, 500/5, 500/5)
             canvas.draw_image(self.game_over_img, (self.game_over_img.get_width()/2, self.game_over_img.get_height()/2), 
                               (self.game_over_img.get_width(), self.game_over_img.get_height()), (450, 200), 
                               (self.game_over_img.get_width(), self.game_over_img.get_height()))
@@ -376,7 +377,8 @@ class Interaction:
 
         # Draw "Level Complete" text if level complete
         if player.level_complete:
-            self.next_lvl_btn = draw_button(canvas, self.next_lvl_btn_img, 320, 420, 500/2, 200/2)
+            self.next_lvl_btn = draw_button(canvas, self.next_lvl_btn_img, 255, 420, 500/2, 200/2)
+            self.reset_btn = draw_button(canvas, self.reset_btn_img, 555, 420, 500/5, 500/5)
             canvas.draw_image(self.level_complete_img, (self.level_complete_img.get_width()/2, self.level_complete_img.get_height()/2), 
                               (self.level_complete_img.get_width(), self.level_complete_img.get_height()), (450, 260), 
                               (self.level_complete_img.get_width(), self.level_complete_img.get_height()))
@@ -403,28 +405,22 @@ class Interaction:
     def handle_mouse_click(self, pos, frame, draw, drawTWO):
         if self.pause_btn.is_clicked(pos):
             frame.set_draw_handler(drawTWO)
-        if self.next_lvl_btn == None:
-            pass
-        else:
-            if self.next_lvl_btn.is_clicked(pos):
-                import level2
-                frame.set_draw_handler(level2.i.draw)
-                frame.set_keydown_handler(level2.keydown)
-                frame.set_keyup_handler(level2.keyup)
-                frame.set_mouseclick_handler(lambda pos: level2.click(pos, frame))
-        if self.exit_btn == None:
-            pass
-        else:
-            if self.exit_btn.is_clicked(pos):
-                self.reset_game()  # Reset the game
-                import levels
-                frame.set_draw_handler(levels.draw)
-                frame.set_mouseclick_handler(lambda pos: levels.click(pos, frame))
-        if self.play_btn == None:
-            pass
-        else:
-            if self.play_btn.is_clicked(pos):
-                frame.set_draw_handler(draw)
+        if self.next_lvl_btn is not None and self.next_lvl_btn.is_clicked(pos):
+            import level2
+            frame.set_draw_handler(level2.i.draw)
+            frame.set_keydown_handler(level2.keydown)
+            frame.set_keyup_handler(level2.keyup)
+            frame.set_mouseclick_handler(lambda pos: level2.click(pos, frame))     
+        if self.exit_btn is not None and self.exit_btn.is_clicked(pos):
+            self.reset_game()  # Reset the game
+            import levels
+            frame.set_draw_handler(levels.draw)
+            frame.set_mouseclick_handler(lambda pos: levels.click(pos, frame))      
+        if self.reset_btn is not None and self.reset_btn.is_clicked(pos):
+            self.reset_game()
+        if self.play_btn is not None and self.play_btn.is_clicked(pos):
+            frame.set_draw_handler(draw)
+                
 
 
 platforms = [

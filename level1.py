@@ -34,6 +34,9 @@ class Platform:
         self.edge_r = self.x + self.width  # Right edge of the platform
         self.edge_b = self.y + self.height  # Bottom edge of the platform
         self.edge_t = self.y  # Top edge of the platform
+    
+    def reset(self, position, width, height):
+        self.__init__(position, width, height)
 
     def draw(self, canvas):
         canvas.draw_polygon([(self.x, self.y),
@@ -65,6 +68,9 @@ class Trap:
             spike = [(spike_x, spike_y), (spike_x + width / 2, spike_y), (spike_x + width / 4, spike_y - height)]
             self.spikes.append(spike)
 
+    def reset(self, spikes_quantity, position, width, height):
+        self.__init__(spikes_quantity, position, width, height)
+
     def draw(self, canvas):
         for spike in self.spikes:
             canvas.draw_polygon(spike, 3, "#5F5F5F", "#A5A2A2")
@@ -80,6 +86,9 @@ class Coin:
         self.x, self.y = position
         self.radius = radius
         self.border = border
+    
+    def reset(self, position, radius, border):
+        self.__init__(position, radius, border)
 
     def draw(self, canvas):
         canvas.draw_circle([self.x, self.y], self.radius, self.border, 'Yellow', 'Orange')
@@ -97,6 +106,9 @@ class Player:
         self.moving_right = False
         self.can_move = True
         self.level_complete = False
+    
+    def reset(self, pos):
+        self.__init__(pos)
 
 
     def draw(self, canvas):
@@ -269,15 +281,24 @@ class Player:
                
 
 class Interaction:
-    def __init__(self, platforms, player, traps, coins):
+    def __init__(self, platforms, player, traps, coins, block_pos):
         self.player = player
         self.platforms = platforms
         self.traps = traps
         self.coins = coins
         self.game_over = False  # Flag to track if game over
-        self.lives_count = 3  # Flag to track if game over
         self.coin_count = 0  # Counter for collected coins
         self.initial_coins_len = len(self.coins)
+        self.block_pos = Vector(platforms[0].width / 2, 500)
+
+        '''self.resetVariablesList = [
+            self.player.on_ground, # should = True when loading back in
+            self.player.can_move, # should = True when loading back in
+            self.game_over, # = False when loading back in
+            self.coins, # should have all of the coins added back to the list when loading back in
+            self.block_pos # should be reset to its initial position
+        ]'''
+
         
         # Buttons
         self.pause_btn_img = 'https://i.ibb.co/LkHqxxz/pause-btn.jpg'
@@ -301,6 +322,10 @@ class Interaction:
         self.game_over_img = simplegui.load_image('https://i.ibb.co/tK8VgNP/game-over.png')
 
 
+    def reset(self, platforms, player, traps, coins, block_pos):
+        self.__init__(platforms, player, traps, coins, block_pos)
+    
+    
     def update(self):
         self.player.update(self.platforms, self.traps, self.coins, self.finish_line)
         
@@ -370,6 +395,18 @@ class Interaction:
         self.play_btn = draw_button(canvas, self.play_btn_img, 500, 450, 250, 100)
         self.exit_btn = draw_button(canvas, self.exit_btn_img, 150, 450, 250, 100)
 
+    def reset_game(self):
+        # Reset player attributes
+        self.player.reset(self.block_pos)
+        # Reset other objects
+        self.coins = [
+            Coin((200,459), 20, 3),
+            Coin((480,400), 20, 3),
+            Coin((825,259), 20, 3),
+            Coin((265,137), 20, 3),
+        ]
+        # Reset the Interaction object itself
+        self.reset(self.platforms, self.player, self.traps, self.coins, self.block_pos)
 
     def handle_mouse_click(self, pos, frame, draw, drawTWO):
         if self.pause_btn.is_clicked(pos):
@@ -387,7 +424,7 @@ class Interaction:
             pass
         else:
             if self.exit_btn.is_clicked(pos):
-                #self.reset = True
+                self.reset_game()  # Reset the game
                 import levels
                 frame.set_draw_handler(levels.draw)
                 frame.set_mouseclick_handler(lambda pos: levels.click(pos, frame))
@@ -428,7 +465,8 @@ coins = [
 ]
 
 
-i = Interaction(platforms, player, traps, coins)
+i = Interaction(platforms, player, traps, coins, block_pos)
+
 
 
 # Define key handlers

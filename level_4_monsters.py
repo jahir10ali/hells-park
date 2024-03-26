@@ -1,310 +1,585 @@
-try:
-    import simplegui
-except ImportError:
+try: 
+    import simplegui 
+except ImportError: 
     import SimpleGUICS2Pygame.simpleguics2pygame as simplegui
 
-from imagesANDbuttons import draw_button, draw_image
 from vector import Vector
 
-canvas_width = 900
-canvas_height = 600
-block_size = 50
-jump_strength = 26
-gravity = 9.81
-is_jumping = False
-move_speed = 5
-monster_move_speed = 5
-is_moving_left = False
-is_moving_right = False
+#import simplegui
+#from user305_o32FtUyCKk_0 import Vector
+
+# Constants
+CANVAS_WIDTH = 900
+CANVAS_HEIGHT = 600
+PLAYER_SIZE = 30
+GRAVITY = Vector(0, 0.25)
+FLOOR_Y = CANVAS_HEIGHT - PLAYER_SIZE / 2  # Y-coordinate of the floor
+
+
+troll_face = simplegui.load_image('https://i.ibb.co/q0nG6Qd/troll-face.png')
+game_over_sound = simplegui.load_sound('https://audio.jukehost.co.uk/4rXY9bKqh9LnxFndLGst7Xs9U9YpKr9b')
+#troll_laugh = simplegui.load_sound('https://audio.jukehost.co.uk/AbmCCtjkcbKmoolGFCixHvlik4zfDVES')
+game_over_sound.set_volume(0.2)
+coin_sound = simplegui.load_sound('https://audio.jukehost.co.uk/UeryrWle3hDSLEgIqrA2zyNG0mNqX15F')
+jump_sound = simplegui.load_sound('https://audio.jukehost.co.uk/849X7g5DQKqnC6dGOuU1asWeUx4D1GUy')
+
+arrow = simplegui.load_image('https://cdn1.iconfinder.com/data/icons/pixel-game/110/pixel-39-512.png')
+
+
+
+
+class Platform:
+    def __init__(self, position, width, height):
+        self.x, self.y = position
+        self.width = width
+        self.height = height
+        self.edge_l = self.x  # Left edge of the platform
+        self.edge_r = self.x + self.width  # Right edge of the platform
+        self.edge_b = self.y + self.height  # Bottom edge of the platform
+        self.edge_t = self.y  # Top edge of the platform
+
+    def draw(self, canvas):
+        canvas.draw_polygon([(self.x, self.y),
+                             (self.x + self.width, self.y),
+                             (self.x + self.width, self.y + self.height),
+                             (self.x, self.y + self.height)],
+                            4, '#1FB016', '#915518')
+
+    def hit(self, player):
+        return player.offset_l() <= self.edge_r and player.offset_r() >= self.edge_l \
+            and player.offset_t() <= self.edge_b and player.offset_b() >= self.edge_t
+
+    
+
+class Trap:
+    def __init__(self, spikes_quantity, position, width, height):
+        self.spikes = []
+        self.width = width
+        self.height = height
+        self.edge_l = position[0] - width / 2  # Left edge of the trap
+        self.edge_r = position[0] + (width / 2 * spikes_quantity)  # Right edge of the trap
+        self.edge_b = position[1]  # Bottom edge of the trap
+        self.edge_t = position[1] - height  # Top edge of the trap
+        
+        # Calculate spike positions
+        for i in range(spikes_quantity):
+            spike_x = position[0] - width / 2 + i * width / 2
+            spike_y = position[1]
+            spike = [(spike_x, spike_y), (spike_x + width / 2, spike_y), (spike_x + width / 4, spike_y - height)]
+            self.spikes.append(spike)
+
+    def draw(self, canvas):
+        for spike in self.spikes:
+            canvas.draw_polygon(spike, 3, "#5F5F5F", "#A5A2A2")
+
+    def hit(self, player):
+        return player.offset_l() <= self.edge_r and player.offset_r() >= self.edge_l \
+            and player.offset_t() <= self.edge_b and player.offset_b() >= self.edge_t
+        
+    
+      
+class Coin:
+    def __init__(self, position, radius, border):
+        self.x, self.y = position
+        self.radius = radius
+        self.border = border
+
+    def draw(self, canvas):
+        canvas.draw_circle([self.x, self.y], self.radius, self.border, 'Yellow', 'Orange')
+
+        
+
+class Monster:
+    def __init__(self, pos, width):
+        self.pos = pos
+        self.width = width
+        self.move_speed = 2  # Default movement speed
+        self.direction = 1  # Initially moving right
+        self.original_x = pos[0]
+        self.distance_traveled = 0
+        self.MAX_DISTANCE = 100  # Maximum distance to travel in one direction
+
+    def move(self):
+        x, y = self.pos
+        x += self.move_speed * self.direction
+        self.pos = (x, y)
+        self.distance_traveled += abs(self.move_speed)  # Increment distance traveled
+        if self.distance_traveled >= self.MAX_DISTANCE:
+            self.direction *= -1  # Reverse direction
+            self.distance_traveled = 0  # Reset distance traveled
+
+    def draw(self, canvas):
+        x, y = self.pos
+        canvas.draw_polygon([(x - self.width / 2, y - self.width / 2),
+                             (x + self.width / 2, y - self.width / 2),
+                             (x + self.width / 2, y + self.width / 2),
+                             (x - self.width / 2, y + self.width / 2)], 1, 'White')
+
+class UpDownMonster:
+    def __init__(self, pos, width):
+        self.pos = pos
+        self.width = width
+        self.speed = 2.5  # Default movement speed
+        self.direction = 1  # Initially moving down
+        self.original_y = pos[1]
+        self.distance_traveled = 0
+        self.MAX_DISTANCE = 170  # Maximum distance to travel in one direction
+
+    def move(self):
+        x, y = self.pos
+        y += self.speed * self.direction
+        self.pos = (x, y)
+        self.distance_traveled += abs(self.speed)  # Increment distance traveled
+        if self.distance_traveled >= self.MAX_DISTANCE:
+            self.direction *= -1  # Reverse direction
+            self.distance_traveled = 0  # Reset distance traveled
+
+    def draw(self, canvas):
+        x, y = self.pos
+        canvas.draw_polygon([(x - self.width / 2, y - self.width / 2),
+                             (x + self.width / 2, y - self.width / 2),
+                             (x + self.width / 2, y + self.width / 2),
+                             (x - self.width / 2, y + self.width / 2)], 1, 'White') 
+       
+        
+class Player:
+    def __init__(self, pos):
+        self.pos = pos
+        self.width = PLAYER_SIZE
+        self.height = PLAYER_SIZE
+        self.vel = Vector(0, 0)
+        self.on_ground = True
+        self.moving_left = False
+        self.moving_right = False
+        self.can_move = True
+        self.level_complete = False
+
+
+    def draw(self, canvas):
+        canvas.draw_polygon([(self.pos.x - PLAYER_SIZE / 2, self.pos.y - PLAYER_SIZE / 2),
+                             (self.pos.x + PLAYER_SIZE / 2, self.pos.y - PLAYER_SIZE / 2),
+                             (self.pos.x + PLAYER_SIZE / 2, self.pos.y + PLAYER_SIZE / 2),
+                             (self.pos.x - PLAYER_SIZE / 2, self.pos.y + PLAYER_SIZE / 2)],
+                            1, "Red", "Red")
+        
+
+    def update(self, platforms, traps, coins, finish_line, monsters, up_down_monsters):
+        self.vel += GRAVITY
+        # Adjust velocity based on movement direction
+        if self.moving_left:
+            self.vel.x = -5
+        elif self.moving_right:
+            self.vel.x = 5
+        else:
+            self.vel.x = 0
+            
+        self.pos += self.vel
+        
+        # Check if player hits the floor
+        if self.pos.y >= FLOOR_Y:
+            self.pos.y = FLOOR_Y
+            self.vel.y = 0
+            self.on_ground = True
+        else:
+            self.on_ground = False
+          
+        
+        # Ensure player stays within canvas bounds
+        # Check if player hits the right edge of the screen
+        if self.pos.x > CANVAS_WIDTH:
+            self.pos.x = CANVAS_WIDTH 
+        # Check if player hits the left edge of the screen
+        if self.pos.x < PLAYER_SIZE / 2:
+            self.pos.x = PLAYER_SIZE / 2
+
+
+        # Check for collisions with platforms
+        for platform in platforms:
+            # Collision with left side of the platform
+            if self.vel.x > 0 and self.pos.x + self.width / 2 >= platform.edge_l and \
+                self.pos.x - self.width / 2 < platform.edge_l and \
+                self.pos.y + self.height / 2 > platform.y and \
+                self.pos.y - self.height / 2 < platform.y + platform.height:
+                self.pos.x = platform.edge_l - self.width / 2
+            # Collision with right side of the platform
+            elif self.vel.x < 0 and self.pos.x - self.width / 2 <= platform.edge_r and \
+                    self.pos.x + self.width / 2 > platform.edge_r and \
+                    self.pos.y + self.height / 2 > platform.y and \
+                    self.pos.y - self.height / 2 < platform.y + platform.height:
+                self.pos.x = platform.edge_r + self.width / 2
+            # Collision with bottom of the platform
+            if self.pos.y - self.height / 2 < platform.edge_b and \
+                self.pos.y + self.vel.y - self.height / 2 > platform.y and \
+                self.pos.x + self.width / 2 > platform.edge_l and \
+                self.pos.x - self.width / 2 < platform.edge_r:
+                    # Collision with bottom of the platform
+                    self.pos.y = platform.edge_b + self.height / 2  # Move player to just above the platform's bottom edge
+                    self.vel.y = 0  # Stop vertical movement
+                    self.on_ground = True  # Set player on ground after collision
+            # Collision with top of the platform
+            elif self.vel.y > 0 and self.pos.y - self.height / 2 <= platform.edge_t and \
+                    self.pos.y + self.height / 2 > platform.edge_t and \
+                    self.pos.x + self.width / 2 > platform.edge_l and \
+                    self.pos.x - self.width / 2 < platform.edge_r:
+                self.pos.y = platform.edge_t - self.height / 2
+                self.vel.y = 0
+                self.on_ground = True
+                # Additional condition to prevent interference with left/right edge collision
+                if (self.pos.x + self.width / 2 > platform.edge_l and \
+                    self.pos.x - self.width / 2 < platform.edge_r):
+                    self.on_ground = True
+
+        
+        # Check for collisions with traps
+        for trap in traps:
+            # Collision with top of the trap
+            if self.pos.y - self.height / 2 <= trap.edge_t and \
+                    self.pos.y + self.height / 2 > trap.edge_t and \
+                    self.pos.x + self.width / 2 > trap.edge_l and \
+                    self.pos.x - self.width / 2 < trap.edge_r:
+                self.pos.y = trap.edge_t - self.height / 2
+                self.vel.y = 0
+                self.on_ground = False
+                self.can_move = False
+                self.moving_left = False  # Stop horizontal movement
+                self.moving_right = False  # Stop horizontal movement
+                break
+        else:  # No collision with trap's top edge
+            self.can_move = True
+
+        # Check for collisions with coins
+        for coin in coins:
+            distance = (self.pos.x - coin.x) ** 2 + (self.pos.y - coin.y) ** 2
+            if distance <= (coin.radius + self.width / 2) ** 2:
+                coins.remove(coin)
+                coin_sound.play()
+                break
+                
+        
+        # Check for collisions with finish line
+        finish_line_left = 830
+        finish_line_right = 830 + finish_line.get_width() / 3
+        finish_line_top = 35
+        finish_line_bottom = 35 + finish_line.get_height() / 3
+
+        # Collision with left edge of finish line
+        if self.pos.x - self.width / 2 <= finish_line_right and \
+                self.pos.x + self.width / 2 >= finish_line_left and \
+                self.pos.y + self.height / 2 >= finish_line_top and \
+                self.pos.y - self.height / 2 <= finish_line_bottom:
+            # Handle collision with left edge
+            self.level_complete = True
+            self.on_ground = False
+            self.can_move = False
+            self.moving_left = False  # Stop horizontal movement
+            self.moving_right = False  # Stop horizontal movement
+            return
+
+        # Collision with right edge of finish line
+        if self.pos.x + self.width / 2 >= finish_line_left and \
+                self.pos.x - self.width / 2 <= finish_line_right and \
+                self.pos.y + self.height / 2 >= finish_line_top and \
+                self.pos.y - self.height / 2 <= finish_line_bottom:
+            # Handle collision with right edge
+            self.level_complete = True
+            self.on_ground = False
+            self.can_move = False
+            self.moving_left = False  # Stop horizontal movement
+            self.moving_right = False  # Stop horizontal movement
+            return
+
+        # Collision with top edge of finish line
+        if self.pos.y - self.height / 2 <= finish_line_bottom and \
+                self.pos.y + self.height / 2 >= finish_line_top and \
+                self.pos.x + self.width / 2 >= finish_line_left and \
+                self.pos.x - self.width / 2 <= finish_line_right:
+            # Handle collision with top edge
+            self.level_complete = True
+            self.on_ground = False
+            self.can_move = False
+            self.moving_left = False  # Stop horizontal movement
+            self.moving_right = False  # Stop horizontal movement
+            return
+        
+        
+        # Check for collisions with monsters
+        for monster in monsters:
+            # Collision with left side of the monster block
+            if self.vel.x > 0 and self.pos.x + self.width / 2 >= monster.pos[0] - monster.width / 2 and \
+                    self.pos.x - self.width / 2 < monster.pos[0] - monster.width / 2 and \
+                    self.pos.y + self.height / 2 > monster.pos[1] - monster.width / 2 and \
+                    self.pos.y - self.height / 2 < monster.pos[1] + monster.width / 2:
+                # Handle collision with left side of the monster block
+                # Adjust player position or perform other actions as needed
+                pass
+            # Collision with right side of the monster block
+            elif self.vel.x < 0 and self.pos.x - self.width / 2 <= monster.pos[0] + monster.width / 2 and \
+                    self.pos.x + self.width / 2 > monster.pos[0] + monster.width / 2 and \
+                    self.pos.y + self.height / 2 > monster.pos[1] - monster.width / 2 and \
+                    self.pos.y - self.height / 2 < monster.pos[1] + monster.width / 2:
+                # Handle collision with right side of the monster block
+                # Adjust player position or perform other actions as needed
+                pass
+            # Collision with top of the monster block
+            if self.pos.y - self.height / 2 <= monster.pos[1] + monster.width / 2 and \
+                    self.pos.y + self.vel.y - self.height / 2 > monster.pos[1] + monster.width / 2 and \
+                    self.pos.x + self.width / 2 > monster.pos[0] - monster.width / 2 and \
+                    self.pos.x - self.width / 2 < monster.pos[0] + monster.width / 2:
+                # Handle collision with top of the monster block
+                # Adjust player position or perform other actions as needed
+                pass
+            # Collision with bottom of the monster block
+            elif self.vel.y > 0 and self.pos.y - self.height / 2 <= monster.pos[1] - monster.width / 2 and \
+                    self.pos.y + self.height / 2 > monster.pos[1] - monster.width / 2 and \
+                    self.pos.x + self.width / 2 > monster.pos[0] - monster.width / 2 and \
+                    self.pos.x - self.width / 2 < monster.pos[0] + monster.width / 2:
+                # Handle collision with bottom of the monster block
+                # Adjust player position or perform other actions as needed
+                pass
+         
+        
+        # Check for collisions with up_down_monsters
+        for monster in up_down_monsters:
+            # Collision with left side of the monster block
+            if self.vel.x > 0 and self.pos.x + self.width / 2 >= monster.pos[0] - monster.width / 2 and \
+                    self.pos.x - self.width / 2 < monster.pos[0] - monster.width / 2 and \
+                    self.pos.y + self.height / 2 > monster.pos[1] - monster.width / 2 and \
+                    self.pos.y - self.height / 2 < monster.pos[1] + monster.width / 2:
+                # Handle collision with left side of the monster block
+                # Adjust player position or perform other actions as needed
+                self.on_ground = False
+                self.can_move = False
+                self.moving_left = False  # Stop horizontal movement
+                self.moving_right = False  # Stop horizontal movement
+                break
+            # Collision with right side of the monster block
+            elif self.vel.x < 0 and self.pos.x - self.width / 2 <= monster.pos[0] + monster.width / 2 and \
+                    self.pos.x + self.width / 2 > monster.pos[0] + monster.width / 2 and \
+                    self.pos.y + self.height / 2 > monster.pos[1] - monster.width / 2 and \
+                    self.pos.y - self.height / 2 < monster.pos[1] + monster.width / 2:
+                # Handle collision with right side of the monster block
+                # Adjust player position or perform other actions as needed
+                self.on_ground = False
+                self.can_move = False
+                self.moving_left = False  # Stop horizontal movement
+                self.moving_right = False  # Stop horizontal movement
+                break
+            # Collision with top of the monster block
+            if self.pos.y - self.height / 2 <= monster.pos[1] + monster.width / 2 and \
+                    self.pos.y + self.vel.y - self.height / 2 > monster.pos[1] + monster.width / 2 and \
+                    self.pos.x + self.width / 2 > monster.pos[0] - monster.width / 2 and \
+                    self.pos.x - self.width / 2 < monster.pos[0] + monster.width / 2:
+                # Handle collision with top of the monster block
+                # Adjust player position or perform other actions as needed
+                pass
+            # Collision with bottom of the monster block
+            elif self.vel.y > 0 and self.pos.y - self.height / 2 <= monster.pos[1] - monster.width / 2 and \
+                    self.pos.y + self.height / 2 > monster.pos[1] - monster.width / 2 and \
+                    self.pos.x + self.width / 2 > monster.pos[0] - monster.width / 2 and \
+                    self.pos.x - self.width / 2 < monster.pos[0] + monster.width / 2:
+                # Handle collision with bottom of the monster block
+                # Adjust player position or perform other actions as needed
+                self.on_ground = False
+                self.can_move = False
+                self.moving_left = False  # Stop horizontal movement
+                self.moving_right = False  # Stop horizontal movement
+                break
+
+
+
+    def jump(self):
+        if self.on_ground:
+            jump_sound.play()
+            self.vel.y = -7  # Adjust jump strength as needed
+
+    def start_move_left(self):
+        if self.can_move:  # Check if the player is allowed to move
+            self.moving_left = True
+
+    def stop_move_left(self):
+        self.moving_left = False
+
+    def start_move_right(self):
+        if self.can_move:  # Check if the player is allowed to move
+            self.moving_right = True
+
+    def stop_move_right(self):
+        self.moving_right = False
+
+        
+        
+        
+frame = simplegui.create_frame("Block Wall", CANVAS_WIDTH, CANVAS_HEIGHT)           
+       
+
+class Interaction:
+    def __init__(self, platforms, player, traps, coins, monsters, up_down_monsters):
+        self.player = player
+        self.platforms = platforms
+        self.traps = traps
+        self.coins = coins
+        self.monsters = monsters
+        self.up_down_monsters = up_down_monsters
+        self.game_over = False  # Flag to track if game over
+        self.coin_count = 0  # Counter for collected coins
+        self.initial_coins_len = len(self.coins)
+        self.finish_line = simplegui.load_image('https://i.ibb.co/7vHknZT/finish-line.png')
+        self.level_complete_img = simplegui.load_image('https://i.ibb.co/X37pXc9/level-complete.png')
+        self.game_over_img = simplegui.load_image('https://i.ibb.co/tK8VgNP/game-over.png')
+        
+
+
+    def update(self):
+        self.player.update(self.platforms, self.traps, self.coins, self.finish_line, self.monsters, self.up_down_monsters)
+        
+        # Check for game over condition
+        if not self.player.can_move and player.level_complete == False:
+            self.game_over = True
+
+        
+        # Update coin count
+        self.coin_count = self.initial_coins_len - len(self.coins)
+
+        
+    def draw(self, canvas):
+        self.update()
+        #if not player.level_complete:
+            #canvas.draw_text('Jump from platform to platform!', (50,310), 20, 'White', 'monospace')
+            #canvas.draw_text('Avoid the spikes or it is Game Over!', (262,520), 20, 'White', 'monospace')
+            #canvas.draw_text('Collect all the coins!', (490,170), 20, 'White', 'monospace')
+        if not self.game_over and self.coin_count == self.initial_coins_len:
+            #self.pause_btn = draw_button(canvas, self.pause_btn_img, 30, 20, 50, 50)
+            canvas.draw_image(self.finish_line, (self.finish_line.get_width()/2, self.finish_line.get_height()/2), 
+                                  (self.finish_line.get_width(), self.finish_line.get_height()), (830, 35), 
+                                  (self.finish_line.get_width()/5, self.finish_line.get_height()/5))
+        self.player.draw(canvas)
+        for platform in self.platforms:
+            platform.draw(canvas)
+        for trap in self.traps:
+            trap.draw(canvas)
+        for coin in self.coins:
+            coin.draw(canvas)
+        for monster in self.monsters:
+            monster.draw(canvas)
+            monster.move()
+        for monster in self.up_down_monsters:
+            monster.draw(canvas)
+            monster.move()
+        
+        # Draw coin count
+        #canvas.draw_text("Coins collected: " + str(self.coin_count) + "/" + str(self.initial_coins_len), (350, 40), 20, "White", "monospace") 
+        #if self.coin_count != self.initial_coins_len:
+            #canvas.draw_text("Collect all coins to finish level", (270, 20), 20, "White", "monospace")
+        #else:
+            #canvas.draw_text("All coins collected, reach finish line", (255, 20), 20, "White", "monospace")
+    
+    
+        # Draw "Game Over" text if game over
+        if self.game_over:
+            canvas.draw_image(self.game_over_img, (self.game_over_img.get_width()/2, self.game_over_img.get_height()/2), 
+                              (self.game_over_img.get_width(), self.game_over_img.get_height()), (450, 200), 
+                              (self.game_over_img.get_width(), self.game_over_img.get_height()))
+            canvas.draw_text("LOL!!!", (50, 50), 50, "Red", "monospace")
+            canvas.draw_image(troll_face, (troll_face.get_width()/2, troll_face.get_height()/2), 
+                              (troll_face.get_width(), troll_face.get_height()), (460, 360), 
+                              (troll_face.get_width()/3, troll_face.get_height()/3))
+            #game_over_sound.play()
+        
+        # Draw "Level Complete" text if level complete
+        if player.level_complete:
+            canvas.draw_image(self.level_complete_img, (self.level_complete_img.get_width()/2, self.level_complete_img.get_height()/2), 
+                              (self.level_complete_img.get_width(), self.level_complete_img.get_height()), (450, 260), 
+                              (self.level_complete_img.get_width(), self.level_complete_img.get_height()))
+            #canvas.draw_text("Level Complete", (260, 230), 80, "Red", "monospace")
+
 
 
 
 platforms = [
-    {"pos": (300, 578), "width": 130, "height": 30},
-    {"pos": (400, 520), "width": 140, "height": 30},
-    {"pos": (670, 570), "width": 300, "height": 30},
-    {"pos": (860, 470), "width": 50, "height": 30},
-    {"pos": (788,365), "width": 50, "height": 30},
-    {"pos": (347,295), "width": 650, "height": 30},
-    {"pos": (63,190), "width": 50, "height": 30}
- 
+    Platform((10, 578), 100, 20),
+    Platform((115, 533), 50, 65),
+    Platform((230, 440), 100, 20), 
+    Platform((420, 398), 50, 200), 
+    Platform((760, 578), 120, 20), 
+    Platform((865,500), 30, 60),
+    Platform((790,420), 40, 40),
+    Platform((850,340), 40, 40), 
+    Platform((790,260), 40, 40), 
+    Platform((515, 270), 30, 20),
+    Platform((170, 270), 150, 20),
+    Platform((50, 185), 60, 20),
+    Platform((120, 100), 60, 20),
+    Platform((300, 60), 60, 20),
+    Platform((450, 60), 445, 20),
+    Platform((0, -22), CANVAS_WIDTH, 20), # canvas ceiling using a platform
+    Platform((900,0), 20, CANVAS_HEIGHT), # canvas edge using a platform
 ]
 
+
+block_pos = Vector(platforms[0].width / 2, 500)
+
+player = Player(block_pos)
+
+traps = [
+    Trap(13, (187, 600), 38, 40),
+    #Trap(1, (310, 438), 38, 30),
+    #Trap(13, (497, 600), 38, 40),
+    #Trap(1, (840, 576), 36.5, 38),  
+    #Trap(1, (260, 268), 38, 25),
+    #Trap(1, (600, 58), 38, 15),
+]
+
+
+coins = [
+    #Coin((139,505), 20, 3),
+    #Coin((254,415), 20, 3),
+    #Coin((780,553), 20, 3),
+    #Coin((204,245), 20, 3),
+    #Coin((154,75), 20, 3),
+    #Coin((504,35), 20, 3),
+]
+
+# Instances of Monster class
 monsters = [
-    {"pos": (150, 566), "radius": 25, "moving_left": True, "moving_right" : False, "width": 100, "original_x": 150},
-    {"pos": (450, 480), "radius": 25, "moving_left": True, "moving_right": False, "width": 100, "original_x": 430},
-    {"pos": (540, 519), "radius": 25, "moving_left": True, "moving_right": False, "width": 100, "original_x": 540}
-    
-
-
+    #Monster((150, 566), 50),
+    #Monster((450, 480), 50),
 ]
 
+# Instances of UpDownMonster class
 up_down_monsters = [
-    {"pos": (660,450), "radius": 25, "moving_down": True, "moving_up": False, "width": 100, "original_y": 450, "speed": 5},
-    {"pos": (735,370), "radius": 25, "moving_down": True, "moving_up": False, "width": 180, "original_y": 450, "speed": 3},
-    {"pos": (576, 170), "radius": 25, "moving_down": True, "moving_up": False, "width": 180, "original_y": 170, "speed": 3},
-    {"pos": (453, 170), "radius": 25, "moving_down": True, "moving_up": False, "width": 180, "original_y": 170, "speed": 5},
-    {"pos": (330, 170), "radius": 25, "moving_down": True, "moving_up": False, "width": 180, "original_y": 170, "speed": 7},
-    {"pos": (255, 90), "radius": 25, "moving_down": True, "moving_up": False, "width": 100, "original_y": 170, "speed": 3}
-    
-
+    UpDownMonster((660, 320), 50),
+    UpDownMonster((660, 120), 50),
 ]
 
-block_pos = Vector(30, 588 - platforms[0]["height"] / 2 - block_size / 2)
 
-exit_btn_img = 'https://i.ibb.co/r29NXsx/exit-btn.jpg'
-play_btn_img = 'https://i.ibb.co/KFG5ms3/play-btn.jpg'  
-lvl2_bg_img = 'https://i.ibb.co/gjTgc9B/lvl2-bg.jpg'
-reset_btn_img = 'https://i.ibb.co/p08zvqP/reset-btn.jpg'
-pause_btn_img = 'https://i.ibb.co/LkHqxxz/pause-btn.jpg'
-paused_screen_img = 'https://i.ibb.co/ZdXM7LN/paused-screen.png'
+i = Interaction(platforms, player, traps, coins, monsters, up_down_monsters)
 
 
-def draw(canvas):
-    global reset_btn, pause_btn, block_pos
-    lvl2_bg = draw_image(canvas, lvl2_bg_img, 450, 300, 900, 600)
-    reset_btn = draw_button(canvas, reset_btn_img, 830, 20, 50, 50)
-    pause_btn = draw_button(canvas, pause_btn_img, 760, 20, 50, 50)
-    canvas.draw_polygon([(block_pos.x - block_size / 2, block_pos.y - block_size / 2),
-                         (block_pos.x + block_size / 2, block_pos.y - block_size / 2),
-                         (block_pos.x + block_size / 2, block_pos.y + block_size / 2),
-                         (block_pos.x - block_size / 2, block_pos.y + block_size / 2)],
-                        1, 'Red', 'Red')
-    
-    for platform in platforms:
-        x, y = platform["pos"]
-        width = platform["width"]
-        height = platform["height"]
-        canvas.draw_polygon([(x - width / 2, y - height / 2),
-                             (x + width / 2, y - height / 2),
-                             (x + width / 2, y + height / 2),
-                             (x - width / 2, y + height / 2)],
-                            3, '#92620F', '#C49139')
-    
-    for monster in monsters:
-        x,y = monster["pos"]
-        radius = monster["radius"]
-        canvas.draw_circle((x,y), radius, 1, 'white' )
-
-    for monster in up_down_monsters:
-        x,y = monster["pos"]
-        radius = monster["radius"]
-        canvas.draw_circle((x,y), radius, 1, 'white')
-
-    
-
-
-
-def draw_pause(canvas):
-    global play_btn, reset_btn, pause_btn, block_pos, paused_screen
-    paused_screen = draw_image(canvas, paused_screen_img, 450, 300, 900, 600)
-    play_btn = draw_button(canvas, play_btn_img, 500, 450, 250, 100)
-    
-
-
-
+# Define key handlers
 def keydown(key):
-    global is_jumping, is_moving_left, is_moving_right
-    if key == simplegui.KEY_MAP['left']:
-        is_moving_left = True
-    elif key == simplegui.KEY_MAP['a']:
-        is_moving_left = True
-    elif key == simplegui.KEY_MAP['right']:
-        is_moving_right = True
-    elif key == simplegui.KEY_MAP['d']:
-        is_moving_right = True
-    elif key == simplegui.KEY_MAP['up'] and not is_jumping:
-        is_jumping = True
-    elif key == simplegui.KEY_MAP['w'] and not is_jumping:
-        is_jumping = True
+    if key == simplegui.KEY_MAP["w"] or key == simplegui.KEY_MAP["up"]:
+        player.jump()
+    elif key == simplegui.KEY_MAP["a"] or key == simplegui.KEY_MAP["left"]:
+        player.start_move_left()
+    elif key == simplegui.KEY_MAP["d"] or key == simplegui.KEY_MAP["right"]:
+        player.start_move_right()
 
+        
 
 def keyup(key):
-    global is_moving_left, is_moving_right
-    if key == simplegui.KEY_MAP['left']:
-        is_moving_left = False
-    if key == simplegui.KEY_MAP['a']:
-        is_moving_left = False
-    elif key == simplegui.KEY_MAP['right']:
-        is_moving_right = False
-    elif key == simplegui.KEY_MAP['d']:
-        is_moving_right = False
+    if key == simplegui.KEY_MAP["a"] or key == simplegui.KEY_MAP["left"]:
+        player.stop_move_left()
+    elif key == simplegui.KEY_MAP["d"] or key == simplegui.KEY_MAP["right"]:
+        player.stop_move_right()
 
-
-
-def update():
-    global block_pos, is_jumping, jump_strength, gravity, monster_move_speed
-
-    if is_moving_left and block_pos.x - block_size / 2 > 0:
-        block_pos.x -= move_speed
-
-    if is_moving_right and block_pos.x + block_size / 2 < canvas_width:
-        block_pos.x += move_speed
-
-    for monster in monsters:
-        x,y = monster["pos"]
-        
-        moving_left = monster["moving_left"]
-        moving_right = monster["moving_right"]
-        width = monster["width"]
 
         
-
-        if moving_left:
-            x -= move_speed
-            if x <= monster["original_x"] - width/2:
-                monster["moving_left"] = False
-                monster["moving_right"] = True
-
-        if moving_right:
-            x += monster_move_speed
-            if x >= monster["original_x"] + width/2:
-                monster["moving_right"] = False
-                monster["moving_left"] = True
-        
-        monster["pos"] = (x, y)
-
-        if is_on_monster():
-            monster["pos"] = (-300, 800)
-
-        if should_die():
-            block_pos = Vector(30, 588 - platforms[0]["height"] / 2 - block_size / 2)
-
-    for monster in up_down_monsters:
-        x,y = monster["pos"]
-        moving_down = monster["moving_down"]
-        moving_up = monster["moving_up"]
-        width = monster["width"]
-
-
-        if moving_down:
-            y += monster["speed"]
-            if y >= monster["original_y"] + width/2:
-                monster["moving_down"] = False
-                monster["moving_up"] = True
-
-        if moving_up:
-            y -= monster["speed"]
-            if y <= monster["original_y"] - width/2:
-                monster["moving_up"] = False
-                monster["moving_down"] = True
-    
-        monster["pos"] = (x, y)
-        
-        
-
-        if should_die_up_down():
-            block_pos = Vector(30, 588 - platforms[0]["height"] / 2 - block_size / 2) 
-                         
-
-    if is_jumping:
-        block_pos.y -= jump_strength
-        jump_strength -= 0.8  
-
-        if block_pos.y >= canvas_height - block_size / 2:
-            is_jumping = False
-            jump_strength = 24
-
-        for platform in platforms:
-            x, y = platform["pos"]
-            width = platform["width"]
-            height = platform["height"]
-
-
-            if (x - width / 2 <= block_pos.x  <= x + width / 2 and
-                y - height / 2 <= block_pos.y  + block_size / 2 <= y + height / 2):
-                is_jumping = False
-                jump_strength = 18
-                block_pos.y = y - height / 2 - block_size / 2
-                break
-            
-                
-
-    if block_pos.y + block_size / 2 > canvas_height:
-        block_pos.y = canvas_height-1 - block_size / 2
-
-    if not is_on_platform():
-        block_pos.y += gravity
-        
-    else:
-        jump_strength = 24
-
     
 
-    
-    
-    
-    
-    
+# Set the draw handler to i.drawONE initially
+frame.set_draw_handler(i.draw)
 
+frame.set_keydown_handler(keydown)
+frame.set_keyup_handler(keyup)
 
-
-
-def is_on_platform():
-    for platform in platforms:
-        x, y = platform["pos"]
-        width = platform["width"]
-        height = platform["height"]
-        if (x - width / 2 <= block_pos.x <= x + width / 2 and
-            y - height / 2 <= block_pos.y + block_size / 2 <= y + height / 2):
-            return True
-    return False
-
-
-def is_on_monster():
-    for monster in monsters:
-        x,y = monster["pos"]
-        radius = monster["radius"]
-        if (x - radius <= block_pos.x <= x + radius and 
-             y - radius <= block_pos.y <= y + radius):
-            return True            
-    return False
-
-
-def is_on_up_down_monster():
-    for monster in up_down_monsters:
-        x,y = monster["pos"]
-        radius = monster["radius"]
-        if (x - radius <= block_pos.x <= x + radius and 
-             y - radius <= block_pos.y <= y + radius):
-            return True            
-    return False
-
-def should_die():
-    for monster in monsters:
-        x,y = monster["pos"]
-        radius = monster["radius"]
-        if ( x - radius <= block_pos.x + block_size/2 and block_pos.x - block_size/2 <= x + radius and
-            y - radius <= block_pos.y - block_size/2):
-            return True
-    return False
-
-
-def should_die_up_down():
-    for monster in up_down_monsters:
-        x,y = monster["pos"]
-        radius = monster["radius"]
-        if ( x - radius <= block_pos.x + block_size/2 and block_pos.x - block_size/2 <= x + radius and
-            y - radius <= block_pos.y + block_size/2 and block_pos.y - block_size/2 <= y + radius):
-            return True
-    return False
-
-
-def click(pos):
-    if reset_btn.is_clicked(pos):
-        block_pos = Vector(70, 588 - platforms[0]["height"] / 2 - block_size / 2)
-    
-
-
-timer = simplegui.create_timer(1000 // 60, update)
-timer.start()
-
-           
-frame = simplegui.create_frame('Hells Park', canvas_width, canvas_height, 0)
-
-# Set the initial draw and mouse click handlers
-frame.set_draw_handler(draw)
-frame.set_mouseclick_handler(click)  # Pass frame to click function
-
-# Start the frame
 frame.start()

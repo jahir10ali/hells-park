@@ -162,11 +162,11 @@ class Player:
         # n/a
         
         # Check if player hits the right edge of the screen
-        if self.pos.x > CANVAS_WIDTH - self.sprite_number_r_and_l:
-            self.pos.x = CANVAS_WIDTH  - self.sprite_number_r_and_l
-        # Check if player hits the left edge of the screen
-        if self.pos.x < self.sprite_number_r_and_l:
-            self.pos.x = self.sprite_number_r_and_l 
+        if self.pos.x > CANVAS_WIDTH - self.sprite_number_r_and_l and i.current_screen == 1:
+            i.switch_screen()
+            self.pos.x = 0  # Reset player position to start of the next screen
+        elif self.pos.x > CANVAS_WIDTH - self.sprite_number_r_and_l and i.current_screen == 2:
+            self.pos.x = CANVAS_WIDTH - self.sprite_number_r_and_l
 
         # Check if player hits the left edge of the screen
         if self.pos.x < 0 and i.current_screen == 1:
@@ -343,7 +343,7 @@ class Interaction:
         self.lives_count = 3  # Flag to track if game over
         self.coin_count = 0  # Counter for collected coins
         self.initial_coins_len = len(self.coinsONE) + len(self.coinsTWO)
-        self.block_pos = Vector(platformsONE[0].width / 2, 500)
+        self.block_pos = Vector(platformsONE[0].width /2  , 500)
 
         # Buttons
         self.pause_btn_img = 'https://i.ibb.co/LkHqxxz/pause-btn.jpg'
@@ -519,15 +519,15 @@ platformsONE = [
     Platform((320, 295), 170, 35),
     Platform((110, 220), 50, 40),
     Platform((200, 130), 170, 35),
-    Platform((760, 295), 20, 20),
+    Platform((750, 295), 20, 20),
     Platform((500, 70), 170, 35),
     Platform((675, 1), 35, 104),
-    Platform((500, -37), 170, 35),
+    
     Platform((55, 55), 20, 20),
 ]
 
 platformsTWO = [
-    Platform((165, 350), 130, 30),
+    Platform((145, 350), 130, 30),
     Platform((405, 420), 40, 40),
     Platform((790, 548), 20, 50),
     Platform((850, 508), 50, 20),
@@ -545,7 +545,7 @@ platformsTWO = [
     Platform((900, 1), 20, CANVAS_HEIGHT),
 ]
 
-block_pos = Vector(platformsONE[0].width / 2, 500)
+block_pos = Vector(platformsONE[0].width /2, 500)
 
 trapsONE = [
     Trap(12, (276, 600), 39, 40),  # Creates a Trap with 6 spikes in a row

@@ -291,14 +291,6 @@ class Interaction:
         self.initial_coins_len = len(self.coins)
         self.block_pos = Vector(platforms[0].width / 2, 500)
 
-        '''self.resetVariablesList = [
-            self.player.on_ground, # should = True when loading back in
-            self.player.can_move, # should = True when loading back in
-            self.game_over, # = False when loading back in
-            self.coins, # should have all of the coins added back to the list when loading back in
-            self.block_pos # should be reset to its initial position
-        ]'''
-
         
         # Buttons
         self.pause_btn_img = 'https://i.ibb.co/LkHqxxz/pause-btn.jpg'

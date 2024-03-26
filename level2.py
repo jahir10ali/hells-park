@@ -98,6 +98,8 @@ class Player:
         self.can_move = True
         self.level_complete = False
 
+    def reset(self, pos):
+        self.__init__(pos)
 
     def draw(self, canvas):
         canvas.draw_polygon([(self.pos.x - PLAYER_SIZE / 2, self.pos.y - PLAYER_SIZE / 2),
@@ -268,7 +270,7 @@ class Player:
                
 
 class Interaction:
-    def __init__(self, platforms, player, traps, coins):
+    def __init__(self, platforms, player, traps, coins, block_pos):
         self.player = player
         self.platforms = platforms
         self.traps = traps
@@ -277,6 +279,7 @@ class Interaction:
         self.lives_count = 3  # Flag to track if game over
         self.coin_count = 0  # Counter for collected coins
         self.initial_coins_len = len(self.coins)
+        self.block_pos = Vector(platforms[0].width / 2, 500)
         
         # Buttons
         self.pause_btn_img = 'https://i.ibb.co/LkHqxxz/pause-btn.jpg'
@@ -299,6 +302,8 @@ class Interaction:
         self.level_complete_img = simplegui.load_image('https://i.ibb.co/X37pXc9/level-complete.png')
         self.game_over_img = simplegui.load_image('https://i.ibb.co/tK8VgNP/game-over.png')
 
+    def reset(self, platforms, player, traps, coins, block_pos):
+        self.__init__(platforms, player, traps, coins, block_pos)
 
     def update(self):
         self.player.update(self.platforms, self.traps, self.coins, self.finish_line)
@@ -361,6 +366,20 @@ class Interaction:
         self.play_btn = draw_button(canvas, self.play_btn_img, 500, 450, 250, 100)
         self.exit_btn = draw_button(canvas, self.exit_btn_img, 150, 450, 250, 100)
 
+    def reset_game(self):
+        # Reset player attributes
+        self.player.reset(self.block_pos)
+        # Reset other objects
+        self.coins = [
+            Coin((139,505), 20, 3),
+            Coin((254,415), 20, 3),
+            Coin((780,553), 20, 3),
+            Coin((204,245), 20, 3),
+            Coin((154,75), 20, 3),
+            Coin((504,35), 20, 3),
+        ]
+        # Reset the Interaction object itself
+        self.reset(self.platforms, self.player, self.traps, self.coins, self.block_pos)
 
     def handle_mouse_click(self, pos, frame, draw, drawTWO):
         if self.pause_btn.is_clicked(pos):
@@ -378,7 +397,7 @@ class Interaction:
             pass
         else:
             if self.exit_btn.is_clicked(pos):
-                #self.reset = True
+                self.reset_game()  # Reset the game
                 import levels
                 frame.set_draw_handler(levels.draw)
                 frame.set_mouseclick_handler(lambda pos: levels.click(pos, frame))
@@ -434,7 +453,7 @@ coins = [
 ]
 
 
-i = Interaction(platforms, player, traps, coins)
+i = Interaction(platforms, player, traps, coins, block_pos)
 
 
 # Define key handlers

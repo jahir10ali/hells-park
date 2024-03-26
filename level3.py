@@ -99,6 +99,8 @@ class Player:
         self.can_move = True
         self.level_complete = False
 
+    def reset(self, pos):
+        self.__init__(pos)
 
     def draw(self, canvas):
         canvas.draw_polygon([(self.pos.x - PLAYER_SIZE / 2, self.pos.y - PLAYER_SIZE / 2),
@@ -276,7 +278,7 @@ class Player:
        
 
 class Interaction:
-    def __init__(self, platformsONE, platformsTWO, player, trapsONE, trapsTWO, coinsONE, coinsTWO):
+    def __init__(self, platformsONE, platformsTWO, player, trapsONE, trapsTWO, coinsONE, coinsTWO, block_pos):
         self.player = player
         self.platformsONE = platformsONE
         self.platformsTWO = platformsTWO
@@ -290,6 +292,7 @@ class Interaction:
         self.lives_count = 3  # Flag to track if game over
         self.coin_count = 0  # Counter for collected coins
         self.initial_coins_len = len(self.coinsONE) + len(self.coinsTWO)
+        self.block_pos = Vector(platformsONE[0].width / 2, 500)
 
         # Buttons
         self.pause_btn_img = 'https://i.ibb.co/LkHqxxz/pause-btn.jpg'
@@ -314,6 +317,8 @@ class Interaction:
         self.arrow = 'https://i.ibb.co/dpD9wZW/arrow.png'
         self.this_way = 'https://i.ibb.co/ZdhjPNJ/this-way.png'
 
+    def reset(self, platformsONE, platformsTWO, player, trapsONE, trapsTWO, coinsONE, coinsTWO, block_pos):
+        self.__init__(platformsONE, platformsTWO, player, trapsONE, trapsTWO, coinsONE, coinsTWO, block_pos)
 
     def update(self):
         if self.current_screen == 1:
@@ -397,6 +402,27 @@ class Interaction:
         self.play_btn = draw_button(canvas, self.play_btn_img, 500, 450, 250, 100)
         self.exit_btn = draw_button(canvas, self.exit_btn_img, 150, 450, 250, 100)
 
+    
+    def reset_game(self):
+        # Reset player attributes
+        self.player.reset(self.block_pos)
+        # Reset other objects
+        self.coinsONE = [
+            Coin((64,33), 20, 3),
+            Coin((364,273), 20, 3),
+            Coin((770,273), 20, 3),
+            Coin((650,45), 20, 3),
+            Coin((660,540), 20, 3),
+        ]
+        self.coinsTWO = [
+            Coin((265,320), 20, 3),
+            Coin((428,395), 20, 3),
+            Coin((810,245), 20, 3),
+            Coin((850,574), 20, 3),
+        ]
+        # Reset the Interaction object itself
+        self.reset(self.platformsONE, self.platformsTWO, self.player, self.trapsONE, self.trapsTWO, self.coinsONE, self.coinsTWO, self.block_pos)
+
 
     def handle_mouse_click(self, pos, frame, draw, drawTWO):
         if self.pause_btn.is_clicked(pos):
@@ -414,7 +440,7 @@ class Interaction:
             pass
         else:
             if self.exit_btn.is_clicked(pos):
-                #self.reset = True
+                self.reset_game()
                 import levels
                 frame.set_draw_handler(levels.draw)
                 frame.set_mouseclick_handler(lambda pos: levels.click(pos, frame))
@@ -497,7 +523,7 @@ coinsTWO = [
 
 player = Player(block_pos)
 
-i = Interaction(platformsONE, platformsTWO, player, trapsONE, trapsTWO, coinsONE, coinsTWO)
+i = Interaction(platformsONE, platformsTWO, player, trapsONE, trapsTWO, coinsONE, coinsTWO, block_pos)
 
 '''resetVariablesList = [ 
     block_pos, 
@@ -510,41 +536,7 @@ i = Interaction(platformsONE, platformsTWO, player, trapsONE, trapsTWO, coinsONE
     (Interaction.coin_count, 0),  
 ]'''
 
-
-def reset_level():
-    global block_pos, coinsONE, coinsTWO, player  # Add other global variables here
-
-    # Reset block_pos
-    block_pos = Vector(platformsONE[0].width / 2, 500)
-
-    # Reset coinsONE
-    coinsONE = [
-        Coin((64, 33), 20, 3),
-        Coin((364, 273), 20, 3),
-        Coin((770, 273), 20, 3),
-        Coin((650, 45), 20, 3),
-        Coin((660, 540), 20, 3),
-    ]
-
-    # Reset coinsTWO
-    coinsTWO = [
-        Coin((265, 320), 20, 3),
-        Coin((428, 395), 20, 3),
-        Coin((810, 245), 20, 3),
-        Coin((850, 574), 20, 3),
-    ]
-
-    # Reset player
-    player = Player(block_pos)
-
-    # Reset other variables
-    player.on_ground = True
-    player.can_move = True
-    i.current_screen = 1
-    i.game_over = False
-    i.coin_count = 0
-
-
+  
 # Define key handlers
 def keydown(key):
     if key == simplegui.KEY_MAP["w"] or key == simplegui.KEY_MAP["up"]:

@@ -96,6 +96,7 @@ class Player:
         self.moving_left = False
         self.moving_right = False
         self.can_move = True
+        self.level_complete = False
 
 
     def draw(self, canvas):
@@ -284,6 +285,14 @@ class Interaction:
         self.play_btn_img = 'https://i.ibb.co/KFG5ms3/play-btn.jpg' 
         self.exit_btn_img = 'https://i.ibb.co/r29NXsx/exit-btn.jpg'
         self.reset_btn_img = 'https://i.ibb.co/p08zvqP/reset-btn.jpg'
+        self.next_lvl_btn_img = 'https://i.ibb.co/5cyXJTm/next-lvl-btn.jpg'
+
+        self.pause_btn = None
+        self.paused_screen = None
+        self.play_btn = None 
+        self.exit_btn = None
+        self.reset_btn = None
+        self.next_lvl_btn = None
 
         # Images
         self.lvl1_bg = 'https://i.ibb.co/M1PzWg8/lvl1-bg.jpg'
@@ -293,7 +302,7 @@ class Interaction:
 
 
     def update(self):
-        self.player.update(self.platforms, self.traps, self.coins)
+        self.player.update(self.platforms, self.traps, self.coins, self.finish_line)
         
         # Check for game over condition
         if not self.player.can_move and player.level_complete == False:
@@ -308,9 +317,9 @@ class Interaction:
         draw_image(canvas, self.lvl1_bg, 450, 300, 900, 600)
         self.update()
         if not player.level_complete:
-            canvas.draw_text('Jump from platform to platform!', (50,310), 20, 'White', 'monospace')
-            canvas.draw_text('Avoid the spikes or it is Game Over!', (262,520), 20, 'White', 'monospace')
-            canvas.draw_text('Collect all the coins!', (490,170), 20, 'White', 'monospace')
+            canvas.draw_text('Jump from platform to platform!', (50,310), 20, 'Black', 'monospace')
+            canvas.draw_text('Avoid the spikes or it is Game Over!', (262,520), 20, 'Black', 'monospace')
+            canvas.draw_text('Collect all the coins!', (490,170), 20, 'Black', 'monospace')
         if not self.game_over:
             self.pause_btn = draw_button(canvas, self.pause_btn_img, 30, 20, 50, 50)
             if self.coin_count == self.initial_coins_len:
@@ -338,17 +347,19 @@ class Interaction:
     
         # Draw "Game Over" text if game over
         if self.game_over:
+            self.exit_btn = draw_button(canvas, self.exit_btn_img, 320, 420, 500/2, 200/2)
             canvas.draw_image(self.game_over_img, (self.game_over_img.get_width()/2, self.game_over_img.get_height()/2), 
                               (self.game_over_img.get_width(), self.game_over_img.get_height()), (450, 200), 
                               (self.game_over_img.get_width(), self.game_over_img.get_height()))
             canvas.draw_text("LOL!!!", (50, 50), 50, "Red", "monospace")
-            canvas.draw_image(troll_face, (troll_face.get_width()/2, troll_face.get_height()/2), 
+            '''canvas.draw_image(troll_face, (troll_face.get_width()/2, troll_face.get_height()/2), 
                               (troll_face.get_width(), troll_face.get_height()), (460, 360), 
-                              (troll_face.get_width()/3, troll_face.get_height()/3))
+                              (troll_face.get_width()/3, troll_face.get_height()/3))'''
             #game_over_sound.play()
 
         # Draw "Level Complete" text if level complete
         if player.level_complete:
+            self.next_lvl_btn = draw_button(canvas, self.next_lvl_btn_img, 320, 420, 500/2, 200/2)
             canvas.draw_image(self.level_complete_img, (self.level_complete_img.get_width()/2, self.level_complete_img.get_height()/2), 
                               (self.level_complete_img.get_width(), self.level_complete_img.get_height()), (450, 260), 
                               (self.level_complete_img.get_width(), self.level_complete_img.get_height()))
@@ -363,13 +374,28 @@ class Interaction:
     def handle_mouse_click(self, pos, frame, draw, drawTWO):
         if self.pause_btn.is_clicked(pos):
             frame.set_draw_handler(drawTWO)
-        elif self.exit_btn.is_clicked(pos):
-            self.reset = True
-            import levels
-            frame.set_draw_handler(levels.draw)
-            frame.set_mouseclick_handler(lambda pos: levels.click(pos, frame))
-        elif self.play_btn.is_clicked(pos):
-            frame.set_draw_handler(draw)
+        if self.next_lvl_btn == None:
+            pass
+        else:
+            if self.next_lvl_btn.is_clicked(pos):
+                import level2
+                frame.set_draw_handler(level2.i.draw)
+                frame.set_keydown_handler(level2.keydown)
+                frame.set_keyup_handler(level2.keyup)
+                frame.set_mouseclick_handler(lambda pos: level2.click(pos, frame))
+        if self.exit_btn == None:
+            pass
+        else:
+            if self.exit_btn.is_clicked(pos):
+                #self.reset = True
+                import levels
+                frame.set_draw_handler(levels.draw)
+                frame.set_mouseclick_handler(lambda pos: levels.click(pos, frame))
+        if self.play_btn == None:
+            pass
+        else:
+            if self.play_btn.is_clicked(pos):
+                frame.set_draw_handler(draw)
 
 
 platforms = [
@@ -398,7 +424,7 @@ coins = [
     Coin((200,459), 20, 3),
     Coin((480,400), 20, 3),
     Coin((825,259), 20, 3),
-    Coin((85,137), 20, 3),
+    Coin((265,137), 20, 3),
 ]
 
 

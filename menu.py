@@ -9,7 +9,7 @@ except ImportError:
 play_btn_img = 'https://i.ibb.co/KFG5ms3/play-btn.jpg'  
 htp_btn_img = 'https://i.ibb.co/2kCBLmH/htp-btn.jpg'
 exit_btn_img = 'https://i.ibb.co/r29NXsx/exit-btn.jpg'
-title_img = 'https://i.ibb.co/vPPxZ7X/title.png'
+title_img = 'https://i.ibb.co/PjQb0W9/title.png'
 
 
 # Define draw function to load and draw the image

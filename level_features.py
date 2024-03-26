@@ -105,7 +105,7 @@ class Player:
                             1, "Red", "Red")
         
 
-    def update(self, platforms, traps, coins):
+    def update(self, platforms, traps, coins, clock):
         self.vel += GRAVITY
         # Adjust velocity based on movement direction
         if self.moving_left:
@@ -265,6 +265,8 @@ class Interaction:
         
     def draw(self, canvas):
         self.update()
+
+        self.clock
         self.player.draw(canvas)
         if self.current_screen == 1 and not self.game_over:
             canvas.draw_image(arrow, (arrow.get_width()/2, arrow.get_height()/2), 
@@ -388,8 +390,9 @@ coinsTWO = [
     Coin((810,245), 20, 3),
     Coin((850,574), 20, 3),
 ]
+clock = Clock()
 
-i = Interaction(platformsONE, platformsTWO, player, trapsONE, trapsTWO, coinsONE, coinsTWO)
+i = Interaction(platformsONE, platformsTWO, player, trapsONE, trapsTWO, coinsONE, coinsTWO, clock)
 
 # Define key handlers
 def keydown(key):

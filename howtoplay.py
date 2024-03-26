@@ -1,13 +1,13 @@
 from imagesANDbuttons import draw_button, draw_image
 
 exit_btn_img = 'https://i.ibb.co/r29NXsx/exit-btn.jpg'
-bg_img = 'https://i.ibb.co/85Tb9GS/htp-bg.jpg'
+bg_img = 'https://i.ibb.co/VtLj2ZZ/htp-bg.jpg'
 
 def draw(canvas):
     global exit_btn 
     bg = draw_image(canvas, bg_img, 450, 300, 900, 600)  # This line is supposed to draw the background image
-    canvas.draw_text("How to play Hell's Park", (130, 150), 50, "Black", 'monospace')
-    canvas.draw_text("just play the game innit", (130, 450), 50, "Black", 'monospace')
+    #canvas.draw_text("How to play Hell's Park", (130, 150), 50, "Black", 'monospace')
+    #canvas.draw_text("just play the game innit", (130, 450), 50, "Black", 'monospace')
     exit_btn = draw_button(canvas, exit_btn_img, 750, 20, 125, 50)
 
 def click(pos, frame):

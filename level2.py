@@ -20,10 +20,9 @@ game_over_sound.set_volume(0.2)
 coin_sound = simplegui.load_sound('https://audio.jukehost.co.uk/UeryrWle3hDSLEgIqrA2zyNG0mNqX15F')
 jump_sound = simplegui.load_sound('https://audio.jukehost.co.uk/849X7g5DQKqnC6dGOuU1asWeUx4D1GUy')
 
-arrow = simplegui.load_image('https://cdn1.iconfinder.com/data/icons/pixel-game/110/pixel-39-512.png')
 
-finish_line = simplegui.load_image('https://i.ibb.co/0Bwn2vJ/finish-line.png')
-sprite = simplegui.load_image('https://i.ibb.co/Y2skLjY/16x16-knight-1.png')
+sprite = simplegui.load_image('https://i.ibb.co/BVLTF72/sprite.png')
+sprite_inverted = simplegui.load_image('https://i.ibb.co/jfXGNJp/sprite-inverted.png')
 
 
 class Platform:
@@ -47,7 +46,6 @@ class Platform:
         return player.offset_l() <= self.edge_r and player.offset_r() >= self.edge_l \
             and player.offset_t() <= self.edge_b and player.offset_b() >= self.edge_t
 
-    
 
 class Trap:
     def __init__(self, spikes_quantity, position, width, height):
@@ -73,7 +71,6 @@ class Trap:
     def hit(self, player):
         return player.offset_l() <= self.edge_r and player.offset_r() >= self.edge_l \
             and player.offset_t() <= self.edge_b and player.offset_b() >= self.edge_t
-        
     
       
 class Coin:
@@ -85,8 +82,7 @@ class Coin:
     def draw(self, canvas):
         canvas.draw_circle([self.x, self.y], self.radius, self.border, 'Yellow', 'Orange')
 
-        
-        
+           
 class Player:
     def __init__(self, pos, image):
         self.pos = pos
@@ -164,6 +160,7 @@ class Player:
         # Check if player hits the left edge of the screen
         if self.pos.x < self.sprite_number_r_and_l:
             self.pos.x = self.sprite_number_r_and_l
+            
 
 
         # Check for collisions with platforms
@@ -202,7 +199,6 @@ class Player:
                     self.pos.x - self.sprite_number_r_and_l < platform.edge_r):
                     self.on_ground = True
 
-        
         # Check for collisions with traps
         for trap in traps:
             # Collision with top of the trap
@@ -216,7 +212,6 @@ class Player:
                 self.can_move = False
                 self.moving_left = False  # Stop horizontal movement
                 self.moving_right = False
-                self.death()  # Stop horizontal movement
                 break
         else:  # No collision with trap's top edge
             self.can_move = True
@@ -278,8 +273,6 @@ class Player:
         self.frame_index = new_frame_index
         self.modulo = new_modulo
 
-
-
     def jump(self):
         if self.on_ground:
             jump_sound.play()
@@ -304,9 +297,6 @@ class Player:
         self.moving_right = False
         self.set([0,0], 5)
 
-    def death(self):
-        self.die = True
-        self.set([0,7], 6)
 
 class Clock():
         def __init__(self):
@@ -321,14 +311,13 @@ class Clock():
                
 
 class Interaction:
-    def __init__(self, platforms, player, clock,  traps, coins, block_pos):
+    def __init__(self, platforms, player, clock, traps, coins, block_pos):
         self.player = player
         self.clock = clock
         self.platforms = platforms
         self.traps = traps
         self.coins = coins
         self.game_over = False  # Flag to track if game over
-        self.lives_count = 3  # Flag to track if game over
         self.coin_count = 0  # Counter for collected coins
         self.initial_coins_len = len(self.coins)
         self.block_pos = Vector(platforms[0].width / 2 , 500)
@@ -378,7 +367,6 @@ class Interaction:
             self.player.next_frame()
 
         self.player.draw(canvas)
-
 
         if not self.game_over:
             self.pause_btn = draw_button(canvas, self.pause_btn_img, 30, 20, 50, 50)

@@ -8,7 +8,7 @@ from imagesANDbuttons import draw_button, draw_image
 # Constants
 CANVAS_WIDTH = 900
 CANVAS_HEIGHT = 600
-PLAYER_SIZE = 30
+PLAYER_SIZE = 20
 GRAVITY = Vector(0, 0.25)
 FLOOR_Y = CANVAS_HEIGHT - PLAYER_SIZE / 2  # Y-coordinate of the floor
 
@@ -488,7 +488,7 @@ platforms = [
     Platform((455, 423), 50, 50),
     Platform((700, 375), 50, 220),
     Platform((800, 285), 50, 50),
-    Platform((455, 230), 170, 40),
+    Platform((455, 230), 170, 30),
     Platform((45, 160), 250, 40)
 ]
 

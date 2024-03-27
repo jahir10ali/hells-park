@@ -25,7 +25,6 @@ def click(pos, frame):
     global exit_btn
     if exit_btn.is_clicked(pos):
         import menu
-        # Change the draw and mouse click handlers directly from game_test.py
         frame.set_draw_handler(menu.draw)
         frame.set_mouseclick_handler(lambda pos: menu.click(pos, frame))  # Pass frame to click function
     elif lvl1_btn.is_clicked(pos):

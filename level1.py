@@ -207,6 +207,7 @@ class Player:
                 self.can_move = False
                 self.moving_left = False  
                 self.moving_right = False
+                self.death()
                 break
         else:  
             self.can_move = True
@@ -269,26 +270,36 @@ class Player:
     def jump(self):
         if self.on_ground:
             jump_sound.play()
-            self.vel.y = -8  
+            self.vel.y = -8 
+            self.image = sprite
             self.set([0,2], 3)
 
     def start_move_left(self):
         if self.can_move: 
             self.moving_left = True
+            self.image = sprite_inverted
             self.set([0,1], 8)
 
     def stop_move_left(self):
         self.moving_left = False
+        self.image = sprite
         self.set([0,0], 5)
 
     def start_move_right(self):
         if self.can_move:  
             self.moving_right = True
+            self.image = sprite
             self.set([0,1], 8)
 
     def stop_move_right(self):
         self.moving_right = False
+        self.image = sprite
         self.set([0,0], 5)
+    
+    def death(self):
+        self.die = True
+        self.image = sprite
+        self.set([0, 7], 6)
 
 class Clock():
         def __init__(self):

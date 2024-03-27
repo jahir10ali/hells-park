@@ -278,6 +278,7 @@ class Player:
                 self.can_move = False
                 self.moving_left = False  # Stop horizontal movement
                 self.moving_right = False
+                self.death()
                 break
         else:  # No collision with trap's top edge
             self.can_move = True
@@ -300,7 +301,10 @@ class Player:
             # Check for collisions between the Player and the sides of the Monster
             if (monster.x - monster.radius <= self.pos.x + self.sprite_number_r_and_l and self.pos.x - self.sprite_number_r_and_l <= monster.x + monster.radius and
                 monster.y - monster.radius <= self.pos.y + self.sprite_bottom and self.pos.y - self.sprite_top <= monster.y + monster.radius ):
-                self.pos.x = 30
+                self.vel.y = 0
+                self.can_move = False
+                self.moving_left = False
+                self.moving_right = False
                 self.death()
 
         for monster in up_down_monsters:
@@ -363,28 +367,34 @@ class Player:
         if self.on_ground:
             jump_sound.play()
             self.vel.y = -8
+            self.image = sprite
             self.set([0,2], 3)  # Adjust jump strength as needed
 
     def start_move_left(self):
         if self.can_move:  # Check if the player is allowed to move
             self.moving_left = True
+            self.image = sprite_inverted
             self.set([0,1], 8)
 
     def stop_move_left(self):
         self.moving_left = False
+        self.image = sprite
         self.set([0,0], 5)
 
     def start_move_right(self):
         if self.can_move:  # Check if the player is allowed to move
             self.moving_right = True
+            self.image = sprite
             self.set([0,1], 8)
 
     def stop_move_right(self):
         self.moving_right = False
+        self.image = sprite
         self.set([0,0], 5)
 
     def death(self):
         self.die = True
+        self.image = sprite
         self.set([0, 7], 6)
 
         

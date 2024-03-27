@@ -9,7 +9,7 @@ from imagesANDbuttons import draw_button, draw_image
 # Constants
 CANVAS_WIDTH = 900
 CANVAS_HEIGHT = 600
-PLAYER_SIZE = 30
+PLAYER_SIZE = 20
 GRAVITY = Vector(0, 0.25)
 FLOOR_Y = CANVAS_HEIGHT - PLAYER_SIZE / 2  # Y-coordinate of the floor
 
@@ -397,17 +397,14 @@ class Interaction:
 
         if not self.game_over:
             self.pause_btn = draw_button(canvas, self.pause_btn_img, 770, 20, 50, 50)
-            if not self.coin_count == self.initial_coins_len and self.current_screen == 2:
+            if self.coin_count == self.initial_coins_len and self.current_screen == 2:
                 canvas.draw_image(self.finish_line, (self.finish_line.get_width()/2, self.finish_line.get_height()/2), 
                                   (self.finish_line.get_width(), self.finish_line.get_height()), (680, 50), 
                                   (self.finish_line.get_width()/4, self.finish_line.get_height()/4))
         if self.current_screen == 1 and not self.game_over:
             draw_image(canvas, self.arrow, 690, 155, 200/1.5, 200/1.5)
             draw_image(canvas, self.this_way, 700, 220, 500/2.5, 100/2.5)
-            #canvas.draw_image(arrow, (arrow.get_width()/2, arrow.get_height()/2), 
-                                  #(arrow.get_width(), arrow.get_height()), (660, 170), 
-                                  #(arrow.get_width()/5, arrow.get_height()/3), 4.7)
-            #canvas.draw_text("This way", (760, 180), 20, "White", "monospace")
+
 
 
         if self.current_screen == 1:
@@ -522,7 +519,7 @@ platformsONE = [
     Platform((750, 295), 20, 20),
     Platform((500, 70), 170, 35),
     Platform((675, 1), 35, 104),
-    
+    Platform((500, -57), 170, 35),
     Platform((55, 55), 20, 20),
 ]
 
@@ -548,14 +545,14 @@ platformsTWO = [
 block_pos = Vector(platformsONE[0].width /2, 500)
 
 trapsONE = [
-    Trap(12, (276, 600), 39, 40),  # Creates a Trap with 6 spikes in a row
-    Trap(10, (723, 600), 39, 40),  # Creates a Trap with 6 spikes in a row
+    Trap(12, (276, 600), 39, 40),  
+    Trap(10, (723, 600), 39, 40),  
     Trap(2, (550, 68), 30, 15),
 ]
 
 trapsTWO = [
-    Trap(40, (2, 600), 40, 40),  # Creates a Trap with 6 spikes in a row
-    Trap(11, (30, 120), 30, 31),  # Creates a Trap with 6 spikes in a row
+    Trap(40, (2, 600), 40, 40), 
+    Trap(11, (30, 120), 30, 31),  
 ]
 
 coinsONE = [
@@ -578,17 +575,6 @@ player = Player(block_pos, sprite)
 clock = Clock()
 
 i = Interaction(platformsONE, platformsTWO, player, clock, trapsONE, trapsTWO, coinsONE, coinsTWO, block_pos)
-
-'''resetVariablesList = [ 
-    block_pos, 
-    coinsONE, 
-    coinsTWO,
-    (Player.on_ground, True),
-    (Player.can_move, True),
-    (Interaction.current_screen, 1),  
-    (Interaction.game_over, False),  
-    (Interaction.coin_count, 0),  
-]'''
 
 
 # Define key handlers

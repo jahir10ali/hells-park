@@ -22,6 +22,8 @@ jump_sound = simplegui.load_sound('https://audio.jukehost.co.uk/849X7g5DQKqnC6dG
 sprite = simplegui.load_image('https://i.ibb.co/BVLTF72/sprite.png')
 sprite_inverted = simplegui.load_image('https://i.ibb.co/jfXGNJp/sprite-inverted.png')
 
+up_down_monster = simplegui.load_image('https://i.ibb.co/1rgJtz9/spike-ball-by-lwiis64-df30ssj.png')
+side_monster = simplegui.load_image('https://i.ibb.co/QPFrDkF/spiky-monster.png')
 
 class Platform:
     def __init__(self, position, width, height):
@@ -38,7 +40,7 @@ class Platform:
                              (self.x + self.width, self.y),
                              (self.x + self.width, self.y + self.height),
                              (self.x, self.y + self.height)],
-                            3, 'White', 'Blue')
+                            3, 'black', 'black')
 
     def hit(self, player):
         return player.offset_l() <= self.edge_r and player.offset_r() >= self.edge_l \
@@ -64,7 +66,7 @@ class Trap:
 
     def draw(self, canvas):
         for spike in self.spikes:
-            canvas.draw_polygon(spike, 1, "#326F28", "#326F28")
+            canvas.draw_polygon(spike, 1, "red", "red")
 
     def hit(self, player):
         return player.offset_l() <= self.edge_r and player.offset_r() >= self.edge_l \
@@ -82,21 +84,26 @@ class Coin:
         canvas.draw_circle([self.x, self.y], self.radius, self.border, 'Yellow', 'Orange')
 
 class Monster:
-    def __init__(self, pos, radius, width, original_x, speed):
+    def __init__(self, pos,  width, original_x, speed):
         self.x, self.y = pos
-        self.radius = radius
+        self.radius = 25
+        self.right = 20
+        self.left = 25
         self.moving_left = True
         self.moving_right = False
         self.width = width
         self.original_x = original_x
         self.speed = speed
     
-    def reset(self, pos, radius, width, original_x, speed):
-        self.__init__(pos, radius, width, original_x, speed)
+    def reset(self, pos,  width, original_x, speed):
+        self.__init__(pos,  width, original_x, speed)
 
 
     def draw(self, canvas):
-        canvas.draw_circle((self.x, self.y), self.radius, 4, 'Red', 'Black')
+        canvas.draw_image(side_monster, (side_monster.get_width()/2, side_monster.get_height()/2), (side_monster.get_width(), side_monster.get_height()), (self.x, self.y), (self.radius*2, self.radius*2))
+
+
+
 
  
     def update(self):
@@ -128,7 +135,7 @@ class Up_down_monster:
         self.__init__(pos, radius, width, original_y, speed)
 
     def draw(self, canvas):
-        canvas.draw_circle ((self.x, self.y), self.radius, 4, 'Red', 'Black')       
+        canvas.draw_image(up_down_monster, (up_down_monster.get_width()/2, up_down_monster.get_height()/2), (up_down_monster.get_width(), up_down_monster.get_height()), (self.x, self.y), (self.radius*2, self.radius*2) )
 
     def update(self):
         for monster in up_and_down_monsters:
@@ -294,12 +301,12 @@ class Player:
         # Check for collisions with Monsters
         for monster in monsters:
             # Check for collisions between the Player and the top of the Monster
-            if (monster.x - monster.radius <= self.pos.x <= monster.x + monster.radius and
+            if (monster.x - monster.radius <= self.pos.x <= monster.x + monster.right and
                 monster.y - monster.radius <= self.pos.y + self.sprite_bottom <= monster.y + monster.radius):
                 monster.x = -300
                 monster.y = 800
             # Check for collisions between the Player and the sides of the Monster
-            if (monster.x - monster.radius <= self.pos.x + self.sprite_number_r_and_l and self.pos.x - self.sprite_number_r_and_l <= monster.x + monster.radius and
+            if (monster.x - monster.radius <= self.pos.x + self.sprite_number_r_and_l and self.pos.x - self.sprite_number_r_and_l <= monster.x + monster.right and
                 monster.y - monster.radius <= self.pos.y + self.sprite_bottom and self.pos.y - self.sprite_top <= monster.y + monster.radius ):
                 self.vel.y = 0
                 self.can_move = False
@@ -583,9 +590,9 @@ coins = [
 ]
 
 monsters = [
-    Monster((150,566), 25, 100, 150, 2),
-    Monster((450, 480), 25, 100, 430, 2),
-    Monster((540,519), 25, 100, 540, 2)
+    Monster((150,566),  100, 150, 2),
+    Monster((450, 480),  100, 430, 2),
+    Monster((540,519),  100, 540, 2)
 ]
 
 up_and_down_monsters = [

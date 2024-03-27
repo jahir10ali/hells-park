@@ -23,6 +23,7 @@ game_over_sound = simplegui.load_sound('https://audio.jukehost.co.uk/4rXY9bKqh9L
 coin_sound = simplegui.load_sound('https://audio.jukehost.co.uk/UeryrWle3hDSLEgIqrA2zyNG0mNqX15F')
 jump_sound = simplegui.load_sound('https://audio.jukehost.co.uk/849X7g5DQKqnC6dGOuU1asWeUx4D1GUy')
 sprite = simplegui.load_image('https://i.ibb.co/BVLTF72/sprite.png')
+sprite_inverted = simplegui.load_image('https://i.ibb.co/jfXGNJp/sprite-inverted.png')
 
 
 # This is the Platform class that represents each platform in the game

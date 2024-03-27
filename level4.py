@@ -30,10 +30,10 @@ class Platform:
         self.x, self.y = position
         self.width = width
         self.height = height
-        self.edge_l = self.x  # Left edge of the platform
-        self.edge_r = self.x + self.width  # Right edge of the platform
-        self.edge_b = self.y + self.height  # Bottom edge of the platform
-        self.edge_t = self.y  # Top edge of the platform
+        self.edge_l = self.x  
+        self.edge_r = self.x + self.width  
+        self.edge_b = self.y + self.height  
+        self.edge_t = self.y 
 
     def draw(self, canvas):
         canvas.draw_polygon([(self.x, self.y),
@@ -42,9 +42,7 @@ class Platform:
                              (self.x, self.y + self.height)],
                             3, 'black', 'black')
 
-    def hit(self, player):
-        return player.offset_l() <= self.edge_r and player.offset_r() >= self.edge_l \
-            and player.offset_t() <= self.edge_b and player.offset_b() >= self.edge_t
+    
 
     
 class Trap:
@@ -52,12 +50,12 @@ class Trap:
         self.spikes = []
         self.width = width
         self.height = height
-        self.edge_l = position[0] - width / 2  # Left edge of the trap
-        self.edge_r = position[0] + (width / 2 * spikes_quantity)  # Right edge of the trap
-        self.edge_b = position[1]  # Bottom edge of the trap
-        self.edge_t = position[1] - height  # Top edge of the trap
+        self.edge_l = position[0] - width / 2  
+        self.edge_r = position[0] + (width / 2 * spikes_quantity)  
+        self.edge_b = position[1]  
+        self.edge_t = position[1] - height  
         
-        # Calculate spike positions
+        
         for i in range(spikes_quantity):
             spike_x = position[0] - width / 2 + i * width / 2
             spike_y = position[1]
@@ -68,9 +66,7 @@ class Trap:
         for spike in self.spikes:
             canvas.draw_polygon(spike, 1, "red", "red")
 
-    def hit(self, player):
-        return player.offset_l() <= self.edge_r and player.offset_r() >= self.edge_l \
-            and player.offset_t() <= self.edge_b and player.offset_b() >= self.edge_t
+
         
     
       
@@ -84,10 +80,10 @@ class Coin:
         canvas.draw_circle([self.x, self.y], self.radius, self.border, 'Yellow', 'Orange')
 
 class Monster:
-    def __init__(self, pos,  width, original_x, speed):
+    def __init__(self, pos, radius, width, original_x, speed):
         self.pos = pos
         self.x, self.y = self.pos
-        self.radius = 25
+        self.radius = radius
         self.right = 20
         self.left = 25
         self.moving_left = True
@@ -96,17 +92,13 @@ class Monster:
         self.original_x = original_x
         self.speed = speed
     
-    def reset(self, pos,  width, original_x, speed):
-        self.__init__(pos,  width, original_x, speed)
+    def reset(self, pos, radius, width, original_x, speed):
+        self.__init__(pos, radius,  width, original_x, speed)
 
 
     def draw(self, canvas):
         canvas.draw_image(side_monster, (side_monster.get_width()/2, side_monster.get_height()/2), (side_monster.get_width(), side_monster.get_height()), (self.x, self.y), (self.radius*2, self.radius*2))
 
-
-
-
- 
     def update(self):
         for monster in monsters:
             if monster.moving_left:
@@ -114,11 +106,14 @@ class Monster:
                 if monster.x <= monster.original_x - monster.width/2:
                     monster.moving_left = False
                     monster.moving_right = True
+                
             if monster.moving_right:
                 monster.x += monster.speed
                 if monster.x >= monster.original_x + monster.width/2:
                     monster.moving_right = False
                     monster.moving_left = True
+                
+
             
             
 
@@ -172,8 +167,6 @@ class Player:
         self.vel = Vector()
         self.frame_index = [0,0]
         self.modulo = 5
-        self.jumping = False
-        self.jump_strength = 15
         self.sprite_number_r_and_l = 22
         self.sprite_top = 20
         self.sprite_bottom = 35
@@ -229,39 +222,38 @@ class Player:
         else:
             self.on_ground = False
             
-        # Ensure player stays within canvas bounds
-        # Check if player hits the right edge of the screen
+        
         if self.pos.x > CANVAS_WIDTH - self.sprite_number_r_and_l:
             self.pos.x = CANVAS_WIDTH  - self.sprite_number_r_and_l
-        # Check if player hits the left edge of the screen
+        
         if self.pos.x < self.sprite_number_r_and_l:
             self.pos.x = self.sprite_number_r_and_l
 
         
-        # Check for collisions with platforms
+       
         for platform in platforms:
-            # Collision with left side of the platform
+            
             if self.vel.x > 0 and self.pos.x + self.sprite_number_r_and_l  >= platform.edge_l and \
                 self.pos.x - self.sprite_number_r_and_l  < platform.edge_l and \
                 self.pos.y + self.sprite_bottom > platform.y and \
                 self.pos.y - self.sprite_top < platform.y + platform.height:
                 self.pos.x = platform.edge_l - self.sprite_number_r_and_l
-            # Collision with right side of the platform
+            
             elif self.vel.x < 0 and self.pos.x - self.sprite_number_r_and_l <= platform.edge_r and \
                     self.pos.x + self.sprite_number_r_and_l > platform.edge_r and \
                     self.pos.y + self.sprite_bottom > platform.y and \
                     self.pos.y - self.sprite_top  < platform.y + platform.height:
                 self.pos.x = platform.edge_r + self.sprite_number_r_and_l 
-            # Collision with bottom of the platform
+            
             if self.pos.y - self.sprite_top  < platform.edge_b and \
                 self.pos.y + self.vel.y - self.sprite_bottom > platform.y and \
                 self.pos.x + self.sprite_number_r_and_l > platform.edge_l and \
                 self.pos.x - self.sprite_number_r_and_l  < platform.edge_r:
-                    # Collision with bottom of the platform
-                    self.pos.y = platform.edge_b + self.sprite_top # Move player to just above the platform's bottom edge
-                    self.vel.y = 0  # Stop vertical movement
-                    self.on_ground = True  # Set player on ground after collision
-            # Collision with top of the platform
+                    
+                    self.pos.y = platform.edge_b + self.sprite_top 
+                    self.vel.y = 0 
+                    self.on_ground = True 
+            
             elif self.vel.y > 0 and self.pos.y - self.sprite_top  <= platform.edge_t and \
                     self.pos.y + self.sprite_bottom > platform.edge_t and \
                     self.pos.x + self.sprite_number_r_and_l  > platform.edge_l and \
@@ -269,14 +261,14 @@ class Player:
                 self.pos.y = platform.edge_t - self.sprite_bottom 
                 self.vel.y = 0
                 self.on_ground = True
-                # Additional condition to prevent interference with left/right edge collision
+                
                 if (self.pos.x + self.sprite_number_r_and_l > platform.edge_l and \
                     self.pos.x - self.sprite_number_r_and_l < platform.edge_r):
                     self.on_ground = True
      
-        # Check for collisions with traps
+        
         for trap in traps:
-            # Collision with top of the trap
+            
             if self.pos.y - self.sprite_top <= trap.edge_t and \
                     self.pos.y + self.sprite_bottom  > trap.edge_t and \
                     self.pos.x + self.sprite_number_r_and_l > trap.edge_l and \
@@ -285,14 +277,14 @@ class Player:
                 self.vel.y = 0
                 self.on_ground = False
                 self.can_move = False
-                self.moving_left = False  # Stop horizontal movement
+                self.moving_left = False  
                 self.moving_right = False
                 self.death()
                 break
-        else:  # No collision with trap's top edge
+        else:  
             self.can_move = True
 
-        # Check for collisions with coins
+        
         for coin in coins:
             distance = (self.pos.x - coin.x) ** 2 + (self.pos.y - coin.y) ** 2
             if distance <= (coin.radius + self.sprite_number_r_and_l) ** 2:
@@ -300,15 +292,15 @@ class Player:
                 coin_sound.play()
                 break
 
-        # Check for collisions with Monsters
+        
         for monster in monsters:
-            # Check for collisions between the Player and the top of the Monster
-            if (monster.x - monster.radius <= self.pos.x <= monster.x + monster.right and
+            
+            if (monster.x - monster.radius <= self.pos.x <= monster.x + monster.radius and
                 monster.y - monster.radius <= self.pos.y + self.sprite_bottom <= monster.y + monster.radius):
                 monster.x = -300
                 monster.y = 800
-            # Check for collisions between the Player and the sides of the Monster
-            if (monster.x - monster.radius <= self.pos.x + self.sprite_number_r_and_l and self.pos.x - self.sprite_number_r_and_l <= monster.x + monster.right and
+
+            if (monster.x - monster.radius <= self.pos.x + self.sprite_number_r_and_l and self.pos.x - self.sprite_number_r_and_l <= monster.x + monster.radius and
                 monster.y - monster.radius <= self.pos.y + self.sprite_bottom and self.pos.y - self.sprite_top <= monster.y + monster.radius ):
                 self.vel.y = 0
                 self.can_move = False
@@ -319,52 +311,55 @@ class Player:
         for monster in up_down_monsters:
             if ( monster.x - monster.radius <= self.pos.x + self.sprite_number_r_and_l and self.pos.x - self.sprite_number_r_and_l <= monster.x + monster.radius and
                 monster.y - monster.radius <= self.pos.y + self.sprite_bottom and self.pos.y - self.sprite_top <= monster.y + monster.radius):
-                self.pos = Vector(20,600)
+                self.vel.y = 0
+                self.can_move = False
+                self.moving_left = False
+                self.moving_right = False
                 self.death()
         
-        # Check for collisions with finish line
+        
         finish_line_left = 63
         finish_line_right = 63 + finish_line.get_width() / 3
         finish_line_top = 150
         finish_line_bottom = 150 + finish_line.get_height() / 3
 
-        # Collision with left edge of finish line
+        
         if self.pos.x - self.sprite_number_r_and_l <= finish_line_right and \
                 self.pos.x + self.sprite_number_r_and_l >= finish_line_left and \
                 self.pos.y + self.sprite_bottom >= finish_line_top and \
                 self.pos.y - self.sprite_top <= finish_line_bottom:
-            # Handle collision with left edge
+            
             self.level_complete = True
             self.on_ground = False
             self.can_move = False
-            self.moving_left = False  # Stop horizontal movement
-            self.moving_right = False  # Stop horizontal movement
+            self.moving_left = False  
+            self.moving_right = False  
             return
 
-        # Collision with right edge of finish line
+        
         if self.pos.x + self.sprite_number_r_and_l >= finish_line_left and \
                 self.pos.x - self.sprite_number_r_and_l <= finish_line_right and \
                 self.pos.y + self.sprite_bottom >= finish_line_top and \
                 self.pos.y - self.sprite_top <= finish_line_bottom:
-            # Handle collision with right edge
+            
             self.level_complete = True
             self.on_ground = False
             self.can_move = False
-            self.moving_left = False  # Stop horizontal movement
-            self.moving_right = False  # Stop horizontal movement
+            self.moving_left = False  
+            self.moving_right = False  
             return
 
-        # Collision with top edge of finish line
+        
         if self.pos.y - self.sprite_top <= finish_line_bottom and \
                 self.pos.y + self.sprite_bottom >= finish_line_top and \
                 self.pos.x + self.sprite_number_r_and_l >= finish_line_left and \
                 self.pos.x - self.sprite_number_r_and_l <= finish_line_right:
-            # Handle collision with top edge
+            
             self.level_complete = True
             self.on_ground = False
             self.can_move = False
-            self.moving_left = False  # Stop horizontal movement
-            self.moving_right = False  # Stop horizontal movement
+            self.moving_left = False  
+            self.moving_right = False  
             return
             
                
@@ -377,10 +372,10 @@ class Player:
             jump_sound.play()
             self.vel.y = -8
             self.image = sprite
-            self.set([0,2], 3)  # Adjust jump strength as needed
+            self.set([0,2], 3) 
 
     def start_move_left(self):
-        if self.can_move:  # Check if the player is allowed to move
+        if self.can_move:  
             self.moving_left = True
             self.image = sprite_inverted
             self.set([0,1], 8)
@@ -391,7 +386,7 @@ class Player:
         self.set([0,0], 5)
 
     def start_move_right(self):
-        if self.can_move:  # Check if the player is allowed to move
+        if self.can_move:  
             self.moving_right = True
             self.image = sprite
             self.set([0,1], 8)
@@ -426,15 +421,15 @@ class Interaction:
         self.platforms = platforms
         self.traps = traps
         self.coins = coins
-        self.game_over = False  # Flag to track if game over
-        self.coin_count = 0  # Counter for collected coins
+        self.game_over = False  
+        self.coin_count = 0  
         self.initial_coins_len = len(self.coins)
         self.monsters = monsters
         self.up_down_monsters = up_down_monsters
         self.block_pos = Vector(30, 540)
         self.sprite = player.image
 
-        # Buttons
+        
         self.pause_btn_img = 'https://i.ibb.co/LkHqxxz/pause-btn.jpg'
         self.paused_screen_img = 'https://i.ibb.co/ZdXM7LN/paused-screen.png'
         self.play_btn_img = 'https://i.ibb.co/KFG5ms3/play-btn.jpg' 
@@ -447,7 +442,7 @@ class Interaction:
         self.exit_btn = None
         self.reset_btn = None
 
-        # Images
+       
         self.lvl4_bg = 'https://i.ibb.co/ZNxkbF2/lvl4-bg.jpg'
         self.finish_line = simplegui.load_image('https://i.ibb.co/7vHknZT/finish-line.png')
         self.level_complete_img = simplegui.load_image('https://i.ibb.co/X37pXc9/level-complete.png')
@@ -460,11 +455,11 @@ class Interaction:
     def update(self):
         self.player.update(self.platforms, self.traps, self.coins, self.finish_line, self.monsters, self.up_down_monsters, self.clock)
         
-        # Check for game over condition
+        
         if not self.player.can_move and player.level_complete == False:
             self.game_over = True
      
-        # Update coin count
+       
         self.coin_count = self.initial_coins_len - len(self.coins) 
 
         
@@ -499,7 +494,7 @@ class Interaction:
             monster.update()        
    
         
-        # Draw coin count
+        
         canvas.draw_text("Coins collected: " + str(self.coin_count) + "/" + str(self.initial_coins_len), (350, 40), 20, "White", "monospace") 
         if self.coin_count != self.initial_coins_len:
             canvas.draw_text("Collect all coins to finish level", (270, 20), 20, "White", "monospace")
@@ -507,7 +502,7 @@ class Interaction:
             canvas.draw_text("All coins collected, reach finish line", (255, 20), 20, "White", "monospace")
     
     
-        # Draw "Game Over" text if game over
+        
         if self.game_over:
             self.exit_btn = draw_button(canvas, self.exit_btn_img, 255, 420, 500/2, 200/2)
             self.reset_btn = draw_button(canvas, self.reset_btn_img, 555, 420, 500/5, 500/5)
@@ -515,16 +510,16 @@ class Interaction:
                               (self.game_over_img.get_width(), self.game_over_img.get_height()), (450, 200), 
                               (self.game_over_img.get_width(), self.game_over_img.get_height()))
             canvas.draw_text("LOL!!!", (50, 50), 50, "Red", "monospace")
-            #game_over_sound.play()
+            
         
-        # Draw "Level Complete" text if level complete
+       
         if player.level_complete:
             self.exit_btn = draw_button(canvas, self.exit_btn_img, 255, 420, 500/2, 200/2)
             self.reset_btn = draw_button(canvas, self.reset_btn_img, 555, 420, 500/5, 500/5)
             canvas.draw_image(self.level_complete_img, (self.level_complete_img.get_width()/2, self.level_complete_img.get_height()/2), 
                               (self.level_complete_img.get_width(), self.level_complete_img.get_height()), (450, 260), 
                               (self.level_complete_img.get_width(), self.level_complete_img.get_height()))
-            #canvas.draw_text("Level Complete", (260, 230), 80, "Red", "monospace")
+            
     
     def drawTWO(self, canvas):
         self.paused_screen = draw_image(canvas, self.paused_screen_img, 450, 300, 900, 600)
@@ -532,10 +527,10 @@ class Interaction:
         self.exit_btn = draw_button(canvas, self.exit_btn_img, 150, 450, 250, 100)
 
     def reset_game(self):
-        # Reset player attributes
+        
         self.player.reset(self.block_pos)
 
-        # Reset other objects
+        
         self.coins = [
             Coin((400, 480), 20, 3),
             Coin((670,530), 20, 3),
@@ -545,9 +540,9 @@ class Interaction:
         ]
 
         self.monsters = [
-            Monster((150,566),  100, 150, 2),
-            Monster((450, 480),  100, 430, 2),
-            Monster((540,519),  100, 540, 2)
+            Monster((150,566), 25,  100, 150, 2),
+            Monster((450, 480), 25,  100, 430, 2),
+            Monster((540,519), 25, 100, 540, 2)
         ]
 
         self.up_and_down_monsters = [
@@ -559,17 +554,19 @@ class Interaction:
             Up_down_monster((255, 90), 25, 180, 170, 1) 
         ]
 
-        # Reset individual monsters
+        
         for monster in self.monsters:
-            monster.reset(monster.pos, monster.width, monster.original_x, monster.speed)
+            monster.reset(monster.pos,monster.radius, monster.width, monster.original_x, monster.speed)
+            
             monster.update()
 
-        # Reset individual up_and_down_monsters
+        
         for monster in self.up_and_down_monsters:
             monster.reset(monster.pos, monster.radius, monster.width, monster.original_y, monster.speed)
+            
             monster.update()
 
-        # Reset the Interaction object itself
+       
         self.reset(self.platforms, self.player, self.clock, self.traps, self.coins, self.monsters, self.up_down_monsters, self.block_pos)
 
         
@@ -577,7 +574,7 @@ class Interaction:
         if self.pause_btn.is_clicked(pos):
             frame.set_draw_handler(drawTWO)     
         if self.exit_btn is not None and self.exit_btn.is_clicked(pos):
-            self.reset_game()  # Reset the game
+            self.reset_game() 
             import levels
             frame.set_draw_handler(levels.draw)
             frame.set_mouseclick_handler(lambda pos: levels.click(pos, frame))      
@@ -618,9 +615,9 @@ coins = [
 ]
 
 monsters = [
-    Monster((150,566),  100, 150, 2),
-    Monster((450, 480),  100, 430, 2),
-    Monster((540,519),  100, 540, 2)
+    Monster((150,566), 25, 100, 150, 2),
+    Monster((450, 480), 25, 100, 430, 2),
+    Monster((540,519), 25, 100, 540, 2)
 ]
 
 up_and_down_monsters = [
@@ -636,7 +633,7 @@ clock = Clock()
 
 i = Interaction(platforms, player, clock, traps, coins, monsters, up_and_down_monsters, block_pos)
 
-# Define key handlers
+
 def keydown(key):
     if key == simplegui.KEY_MAP["w"] or key == simplegui.KEY_MAP["up"]:
         player.jump()

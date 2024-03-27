@@ -85,7 +85,8 @@ class Coin:
 
 class Monster:
     def __init__(self, pos,  width, original_x, speed):
-        self.x, self.y = pos
+        self.pos = pos
+        self.x, self.y = self.pos
         self.radius = 25
         self.right = 20
         self.left = 25
@@ -123,7 +124,8 @@ class Monster:
 
 class Up_down_monster:
     def __init__(self, pos, radius, width, original_y, speed):
-        self.x, self.y = pos
+        self.pos = pos
+        self.x, self.y = self.pos
         self.radius = radius
         self.moving_down = True
         self.moving_up = False
@@ -532,6 +534,7 @@ class Interaction:
     def reset_game(self):
         # Reset player attributes
         self.player.reset(self.block_pos)
+
         # Reset other objects
         self.coins = [
             Coin((400, 480), 20, 3),
@@ -540,11 +543,36 @@ class Interaction:
             Coin((788, 325), 20, 3),
             Coin((850, 220), 20, 3),
         ]
-        #self.monsters.reset(self.pos, self.radius, self.width, self.original_x, self.speed)
-        #self.up_down_monsters.reset(self, pos, radius, width, original_y, speed)
+
+        self.monsters = [
+            Monster((150,566),  100, 150, 2),
+            Monster((450, 480),  100, 430, 2),
+            Monster((540,519),  100, 540, 2)
+        ]
+
+        self.up_and_down_monsters = [
+            Up_down_monster((660, 450), 25, 140, 450, 1),
+            Up_down_monster((735, 370), 25, 180, 450, 1),
+            Up_down_monster((576,170), 25, 180, 170, 1),
+            Up_down_monster((453, 170), 25, 180, 170, 1),
+            Up_down_monster((330,170), 25, 140, 170, 1),
+            Up_down_monster((255, 90), 25, 180, 170, 1) 
+        ]
+
+        # Reset individual monsters
+        for monster in self.monsters:
+            monster.reset(monster.pos, monster.width, monster.original_x, monster.speed)
+            monster.update()
+
+        # Reset individual up_and_down_monsters
+        for monster in self.up_and_down_monsters:
+            monster.reset(monster.pos, monster.radius, monster.width, monster.original_y, monster.speed)
+            monster.update()
+
         # Reset the Interaction object itself
         self.reset(self.platforms, self.player, self.clock, self.traps, self.coins, self.monsters, self.up_down_monsters, self.block_pos)
 
+        
     def handle_mouse_click(self, pos, frame, draw, drawTWO):
         if self.pause_btn.is_clicked(pos):
             frame.set_draw_handler(drawTWO)     

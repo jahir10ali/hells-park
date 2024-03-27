@@ -474,7 +474,6 @@ platformsONE = [
     Platform((750, 295), 20, 20),
     Platform((500, 70), 170, 35),
     Platform((675, 1), 35, 104),
-    Platform((500, -57), 170, 35),
     Platform((55, 55), 20, 20),
 ]
 

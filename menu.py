@@ -5,7 +5,7 @@ howtoplay.py screens if its respective buttons are clicked.
 '''
 
 from imagesANDbuttons import draw_button, draw_image 
-# This import is for drawing buttons and image
+# This import is for drawing buttons and images
 
 try:
     import simplegui

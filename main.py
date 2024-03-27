@@ -1,7 +1,7 @@
 ''' 
 This is the main.py file. This was created to only instantiate a frame. 
 It allows other files to set the frame draw handler to its own draw(canvas) method.
-This file sets the draw handlaer to the draw() method in the menu.py file as this is the first screen.
+This file sets the draw handler to the draw() method in the menu.py file as this is the first screen.
 '''
 
 try:

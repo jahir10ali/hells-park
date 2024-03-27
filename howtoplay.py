@@ -4,7 +4,7 @@ and insights of the game and has an exit button to go back to the menu (menu.py)
 '''
 
 from imagesANDbuttons import draw_button, draw_image
-# This import is for drawing buttons and image
+# This import is for drawing buttons and images
 
 exit_btn_img = 'https://i.ibb.co/r29NXsx/exit-btn.jpg'
 bg_img = 'https://i.ibb.co/VtLj2ZZ/htp-bg.jpg'

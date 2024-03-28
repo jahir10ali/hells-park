@@ -1,20 +1,49 @@
-# READ THIS FILE
-When you make changes, make sure you make a new branch, do not make any edits
-directly to the main branch. This is because it can mess up the code
-if the code is incorrect or incompatible with the other code we have made!
+# Hell's Park - Python Platformer Game
 
-To make a new branch, click on the bottom left and create a new branch from there.
-Put your name and a number as a branch name.
+## Introduction
+Welcome to Hell's Park, a challenging Python platformer game developed using the SimpleGUI library. This README serves as a comprehensive guide to the game, covering its purpose, gameplay mechanics, technical aspects, and development journey.
 
-Now you can make edits to this repo such as editing code, creating code and more.
+## Motivation
+The purpose of this game is to provide players with a challenging and engaging platformer experience, inspired by classic tough platformer games like Cat Mario. Through Hell's Park, players can test their skills in navigating through tricky levels filled with deadly traps and obstacles.
 
-After that make sure you commit these changes. When you commit these chnages,
-make sure you put a nice title to it so we know what you have changed.
-Make sure to add a description to for more context. 
-When you commit these changes, you can directly make a pull request here! OR, you can
-now go on GitHub and make a pull request for that code, this means requesting to submit
-these changes into the main program. 
+## Features
+- Serene to dystopian theme progression
+- Four progressively challenging levels
+- Intuitive user interface with main menu, how to play section, and level selection
+- Precise collision detection for player interaction with platforms, coins, traps, and monsters
+- Vector class integration for managing player movement and game physics
 
-Make sure the program is always executed using the main.py file!
+## Installation and Running
+To run Hell's Park:
+1. Clone the repository to your local machine.
+2. Install dependencies by running `pip install -r requirements.txt`.
+3. Navigate to the project directory.
+4. Run the `main.py` file using Python.
 
-DONE!
+## How to Play
+- Use WASD or Arrow keys to move the player left/right and jump.
+- Collect all coins in each level to unlock the finish line.
+- Avoid traps such as spikes and monsters.
+- Reach the finish line to complete the level.
+- Use the main menu to navigate through the game.
+
+## Screenshots
+![Main Menu](screenshots/main_menu.png)
+![How to Play](screenshots/how_to_play.png)
+![Levels Screen](screenshots/levels_screen.png)
+![Example Level - Level 1](screenshots/level1.png)
+![Pausing the Game](screenshots/paused_game.png)
+![Game Over Screen](screenshots/game_over.png)
+![Level Complete Screen](screenshots/level_complete.png)
+
+## Credits
+- Developed by Jahir Ali and Rochak Moktan
+- Inspired by challenging platformer games like Cat Mario
+
+## License
+This project is licensed under the [MIT License](LICENSE).
+
+## Badges
+[![GitHub issues](https://img.shields.io/github/issues/your/repository.svg)](https://github.com/your/repository/issues)
+[![GitHub forks](https://img.shields.io/github/forks/your/repository.svg)](https://github.com/your/repository/network)
+[![GitHub stars](https://img.shields.io/github/stars/your/repository.svg)](https://github.com/your/repository/stargazers)

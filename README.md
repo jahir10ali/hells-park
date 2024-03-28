@@ -42,6 +42,9 @@ To run Hell's Park:
 - Inspired by challenging platformer games like Cat Mario, Fireboy and Watergirl, Unfair Mario, and The Impossible Game
 
 ## License
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.txt)
+
 This project is licensed under the [MIT License](LICENSE).
 
 ## Badges

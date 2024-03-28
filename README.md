@@ -28,15 +28,6 @@ To run Hell's Park:
 - Reach the finish line to complete the level.
 - Use the buttons to navigate through the game.
 
-## Screenshots
-![Main Menu](screenshots/main-menu.jpg)
-![How to Play](screenshots/how-to-play.jpg)
-![Levels Screen](screenshots/levels.jpg)
-![Example Level - Level 1](screenshots/level1.jpg)
-![Pausing the Game](screenshots/paused-game.jpg)
-![Game Over Screen](screenshots/game-over.jpg)
-![Level Complete Screen](screenshots/level-complete.jpg)
-
 ## Credits
 - Developed by Jahir Ali and Rochak Moktan
 - Inspired by challenging platformer games like Cat Mario, Fireboy and Watergirl, Unfair Mario, and The Impossible Game

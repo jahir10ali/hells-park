@@ -18,7 +18,7 @@ To run Hell's Park:
 1. Clone the repository to your local machine.
 2. Install dependencies by running `pip install -r requirements.txt`.
 3. Navigate to the project directory.
-4. Run the `main.py` file using Python.
+4. Run the `main.py` file to launch the game.
 
 ## How to Play
 - Use WASD or Arrow keys to move the player left/right and jump.

@@ -29,13 +29,13 @@ To run Hell's Park:
 - Use the buttons to navigate through the game.
 
 ## Screenshots
-![Main Menu](screenshots/main-menu.png)
-![How to Play](screenshots/how-to-play.png)
-![Levels Screen](screenshots/levels.png)
-![Example Level - Level 1](screenshots/level1.png)
-![Pausing the Game](screenshots/paused-game.png)
-![Game Over Screen](screenshots/game-over.png)
-![Level Complete Screen](screenshots/level-complete.png)
+![Main Menu](screenshots/main-menu.jpg)
+![How to Play](screenshots/how-to-play.jpg)
+![Levels Screen](screenshots/levels.jpg)
+![Example Level - Level 1](screenshots/level1.jpg)
+![Pausing the Game](screenshots/paused-game.jpg)
+![Game Over Screen](screenshots/game-over.jpg)
+![Level Complete Screen](screenshots/level-complete.jpg)
 
 ## Credits
 - Developed by Jahir Ali and Rochak Moktan

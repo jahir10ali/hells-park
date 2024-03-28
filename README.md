@@ -37,8 +37,3 @@ To run Hell's Park:
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.txt)
 
 This project is licensed under the [MIT License](LICENSE.txt).
-
-## Badges
-[![GitHub issues](https://img.shields.io/github/issues/your/repository.svg)](https://github.com/your/repository/issues)
-[![GitHub forks](https://img.shields.io/github/forks/your/repository.svg)](https://github.com/your/repository/network)
-[![GitHub stars](https://img.shields.io/github/stars/your/repository.svg)](https://github.com/your/repository/stargazers)

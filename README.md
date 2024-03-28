@@ -1,10 +1,10 @@
 # Hell's Park - Python Platformer Game
 
 ## Introduction
-Welcome to Hell's Park, a challenging Python platformer game developed using the SimpleGUI library. This README serves as a comprehensive guide to the game, covering its purpose, gameplay mechanics, technical aspects, and development journey.
+Welcome to Hell's Park, a challenging Python platformer game developed using the SimpleGUI library. This README serves as a comprehensive guide to the game, covering its motivation and purpose.
 
 ## Motivation
-The purpose of this game is to provide players with a challenging and engaging platformer experience, inspired by classic tough platformer games like Cat Mario. Through Hell's Park, players can test their skills in navigating through tricky levels filled with deadly traps and obstacles.
+The purpose of this game is to provide players with a challenging and engaging platformer experience, inspired by classic tough platformer games like Cat Mario, Fireboy and Watergirl, Unfair Mario, and The Impossible Game. Through Hell's Park, players can test their skills in navigating through tricky levels filled with deadly traps and obstacles.
 
 ## Features
 - Serene to dystopian theme progression
@@ -22,10 +22,11 @@ To run Hell's Park:
 
 ## How to Play
 - Use WASD or Arrow keys to move the player left/right and jump.
+- Jump from platform to platform including platforms of shorter width
 - Collect all coins in each level to unlock the finish line.
 - Avoid traps such as spikes and monsters.
 - Reach the finish line to complete the level.
-- Use the main menu to navigate through the game.
+- Use the buttons to navigate through the game.
 
 ## Screenshots
 ![Main Menu](screenshots/main_menu.png)
@@ -38,7 +39,7 @@ To run Hell's Park:
 
 ## Credits
 - Developed by Jahir Ali and Rochak Moktan
-- Inspired by challenging platformer games like Cat Mario
+- Inspired by challenging platformer games like Cat Mario, Fireboy and Watergirl, Unfair Mario, and The Impossible Game
 
 ## License
 This project is licensed under the [MIT License](LICENSE).
